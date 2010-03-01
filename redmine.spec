@@ -2,20 +2,24 @@
 # - finish spec
 Summary:	Flexible project management web application
 Name:		redmine
-Version:	0.8.1
+Version:	0.9.3
 Release:	0.1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://rubyforge.org/frs/download.php/51747/%{name}-%{version}.tar.gz
-# Source0-md5:	3f3dbc9ea6c9ef294efb96f8398ee7c7
+Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
+# Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
 URL:		http://www.redmine.org/
 BuildRequires:	rake >= 0.8.3
-Requires:	rails < 2.2
-Requires:	rails >= 2.1.2
+Requires:	rails >= 2.3.5
 Requires:	webapps
 Requires:	webserver(alias)
-Suggests:	rmagic
-Suggests:	subversion
+Suggests:	cvs
+Suggests:	git-core
+Suggests:	mercurial
+Suggests:	ruby-mysql
+Suggests:	ruby-openid
+Suggests:	ruby-rmagic
+Suggests:	subversion >= 1.3
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
