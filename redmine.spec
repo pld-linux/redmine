@@ -9,21 +9,25 @@ Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
 URL:		http://www.redmine.org/
-BuildRequires:	rake >= 0.8.3
-Requires:	rails >= 2.3.5
+BuildRequires:	ruby-rake >= 0.8.3
+Requires:	ruby-RMagic
+Requires:	ruby-SyslogLogger
+Requires:	ruby-rails >= 2.3.5
+Requires:	ruby-rubytree
+Requires:	ruby-coderay
 Requires:	webapps
 Requires:	webserver(alias)
 Suggests:	cvs
 Suggests:	git-core
 Suggests:	mercurial
 Suggests:	ruby-mysql
-Suggests:	ruby-openid
-Suggests:	ruby-rmagic
+Suggests:	ruby-mocha
+Suggests:	ruby-openid >= 2.1.4
+Suggests:	ruby-net-ldap
 Suggests:	subversion >= 1.3
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_datadir	%{_prefix}/share/%{name}
 %define		_webapps	/etc/webapps
 %define		_webapp		%{name}
 %define		_sysconfdir	%{_webapps}/%{_webapp}
@@ -54,13 +58,26 @@ cross-database.
 %prep
 %setup -q
 
+rm -r vendor/gems
+rm -f vendor/plugins/ruby-net-ldap*
+rm -f vendor/plugins/coderay*
+
 %build
 
 %install
 rm -rf $RPM_BUILD_ROOT
+install -d $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
+
+%pre
+%useradd -u 212 -d %{_datadir}/%{name} -s /bin/false -c "Redmine User" -g nobody redmine
+
+%postun
+if [ "$1" = "0" ]; then
+	%userremove redmine
+fi
 
 %files
 %defattr(644,root,root,755)
