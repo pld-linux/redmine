@@ -55,6 +55,14 @@ Overview:
 Written using Ruby on Rails framework, it is cross-platform and
 cross-database.
 
+%package testsuite
+Summary:	Test suite for Redmine
+Group:		Applications/WWW
+Requires:	%{name} = %{version}-%{release}
+
+%description testsuite
+Test suite for Redmine.
+
 %prep
 %setup -q
 
@@ -67,6 +75,8 @@ rm -f vendor/plugins/coderay*
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+cp -a * $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -81,3 +91,15 @@ fi
 
 %files
 %defattr(644,root,root,755)
+%{_datadir}/%{name}/app
+%{_datadir}/%{name}/lib
+%{_datadir}/%{name}/public
+%{_datadir}/%{name}/script
+%{_datadir}/%{name}/vendor
+%exclude %{_datadir}/%{name}/vendor/plugins/*/test
+
+%files testsuite
+%defattr(644,root,root,755)
+%{_datadir}/%{name}/config/environments/test*.rb
+%{_datadir}/%{name}/test
+%{_datadir}/%{name}/vendor/plugins/*/test
