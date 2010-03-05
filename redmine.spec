@@ -9,22 +9,27 @@ Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
 URL:		http://www.redmine.org/
+BuildRequires:	rpmbuild(macros) >= 1.202
 BuildRequires:	ruby-rake >= 0.8.3
+Requires(postun):	/usr/sbin/userdel
+Requires(pre):	/bin/id
+Requires(pre):	/usr/sbin/useradd
 Requires:	ruby-RMagic
 Requires:	ruby-SyslogLogger
+Requires:	ruby-coderay
 Requires:	ruby-rails >= 2.3.5
 Requires:	ruby-rubytree
-Requires:	ruby-coderay
 Requires:	webapps
 Requires:	webserver(alias)
 Suggests:	cvs
 Suggests:	git-core
 Suggests:	mercurial
-Suggests:	ruby-mysql
 Suggests:	ruby-mocha
-Suggests:	ruby-openid >= 2.1.4
+Suggests:	ruby-mysql
 Suggests:	ruby-net-ldap
+Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
+Provides:	user(redmine)
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -76,7 +81,7 @@ rm -f vendor/plugins/coderay*
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-cp -a * $RPM_BUILD_ROOT%{_datadir}/%{name}
+cp -a . $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
