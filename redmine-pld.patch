@@ -1,0 +1,80 @@
+diff -ur redmine-0.9.3/app/models/auth_source_ldap.rb redmine-0.9.3-fixes/app/models/auth_source_ldap.rb
+--- redmine-0.9.3/app/models/auth_source_ldap.rb	2010-02-28 11:28:06.000000000 +0100
++++ redmine-0.9.3-fixes/app/models/auth_source_ldap.rb	2010-03-03 11:55:24.000000000 +0100
+@@ -15,7 +15,12 @@
+ # along with this program; if not, write to the Free Software
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ 
+-require 'net/ldap'
++begin
++  require 'net/ldap'
++rescue LoadError
++  # NET::LDAP is not available
++end
++
+ require 'iconv'
+ 
+ class AuthSourceLdap < AuthSource 
+diff -ur redmine-0.9.3/config/environment.rb redmine-0.9.3-fixes/config/environment.rb
+--- redmine-0.9.3/config/environment.rb	2010-02-28 11:28:08.000000000 +0100
++++ redmine-0.9.3-fixes/config/environment.rb	2010-03-02 23:58:55.000000000 +0100
+@@ -50,7 +50,7 @@
+   # It will automatically turn deliveries on
+   config.action_mailer.perform_deliveries = false
+ 
+-  config.gem 'rubytree', :lib => 'tree'
++  require 'tree' # rubytree
+   
+   # Load any local configuration that is kept out of source control
+   # (e.g. gems, patches).
+diff -ur redmine-0.9.3/lib/redmine/menu_manager.rb redmine-0.9.3-fixes/lib/redmine/menu_manager.rb
+--- redmine-0.9.3/lib/redmine/menu_manager.rb	2010-02-28 11:28:08.000000000 +0100
++++ redmine-0.9.3-fixes/lib/redmine/menu_manager.rb	2010-03-06 13:05:22.000000000 +0100
+@@ -15,7 +15,7 @@
+ # along with this program; if not, write to the Free Software
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ 
+-require 'tree' # gem install rubytree
++require 'tree' # rubytree
+ 
+ # Monkey patch the TreeNode to add on a few more methods :nodoc:
+ module TreeNodePatch
+diff -ur redmine-0.9.3/lib/redmine.rb redmine-0.9.3-fixes/lib/redmine.rb
+--- redmine-0.9.3/lib/redmine.rb	2010-02-28 11:28:08.000000000 +0100
++++ redmine-0.9.3-fixes/lib/redmine.rb	2010-03-06 13:04:43.000000000 +0100
+@@ -9,7 +9,7 @@
+ require 'redmine/wiki_formatting'
+ 
+ begin
+-  require_library_or_gem 'RMagick' unless Object.const_defined?(:Magick)
++  require 'RMagick' unless Object.const_defined?(:Magick)
+ rescue LoadError
+   # RMagick is not available
+ end
+diff -ur redmine-0.9.3/lib/tasks/load_default_data.rake redmine-0.9.3-fixes/lib/tasks/load_default_data.rake
+--- redmine-0.9.3/lib/tasks/load_default_data.rake	2010-02-28 11:28:08.000000000 +0100
++++ redmine-0.9.3-fixes/lib/tasks/load_default_data.rake	2010-03-01 16:39:26.000000000 +0100
+@@ -28,7 +28,7 @@
+     rescue Redmine::DefaultData::DataAlreadyLoaded => error
+       puts error
+     rescue => error
+-      puts "Error: " + error
++      print "Error: ", error
+       puts "Default configuration data was not loaded."
+     end
+   end
+diff -ur redmine-0.9.3/vendor/plugins/open_id_authentication/init.rb redmine-0.9.3-fixes/vendor/plugins/open_id_authentication/init.rb
+--- redmine-0.9.3/vendor/plugins/open_id_authentication/init.rb	2010-02-28 11:28:07.000000000 +0100
++++ redmine-0.9.3-fixes/vendor/plugins/open_id_authentication/init.rb	2010-03-06 13:46:07.000000000 +0100
+@@ -1,11 +1,7 @@
+ begin
+   require 'openid'
+ rescue LoadError
+-  begin
+-    gem 'ruby-openid', '>=2.1.4'
+-  rescue Gem::LoadError
+     # no openid support
+-  end
+ end
+ 
+ if Object.const_defined?(:OpenID)
