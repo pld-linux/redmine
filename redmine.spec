@@ -99,6 +99,10 @@ find -type f -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
 
+find -type f -print0 | \
+	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \
+			     -e 's,/usr/local/bin/ruby,%{__ruby},'
+
 %build
 
 %install
