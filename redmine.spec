@@ -1,5 +1,3 @@
-# TODO
-# - finish spec
 # for reposman
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
@@ -10,7 +8,9 @@ License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
+Source1:	%{name}.conf
 URL:		http://www.redmine.org/
+BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
 BuildRequires:	ruby-rake >= 0.8.3
 Requires(postun):	/usr/sbin/userdel
@@ -62,6 +62,22 @@ Overview:
 Written using Ruby on Rails framework, it is cross-platform and
 cross-database.
 
+%package mailhandler
+Summary:	Forward emails from email server to redmine
+Group:		Applications/WWW
+
+%description mailhandler
+Reads an email from standard input and forward it to a Redmine
+server through a HTTP request.
+
+%package reposman
+Summary:	SCM repository manager for redmine
+Group:		Applications/WWW
+Requires:	ruby-activeresource
+
+%description reposman
+SCM repository manager for redmine.
+
 %package testsuite
 Summary:	Test suite for Redmine
 Group:		Applications/WWW
@@ -77,38 +93,36 @@ rm -r vendor/gems
 rm -r vendor/plugins/ruby-net-ldap*
 rm -r vendor/plugins/coderay*
 
+find -type f -print0 | xargs -0 dos2unix -k -q
+
 %build
 
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sysconfdir},%{_datadir}/%{name}} \
 	$RPM_BUILD_ROOT{%{_bindir},%{perl_vendorlib}/Apache} \
-	$RPM_BUILD_ROOT/var/lib/%{name}/{plugin_assets,tmp/{cache,pids,sessions,sockets}}
+	$RPM_BUILD_ROOT/var/lib/%{name}/{files,log,plugin_assets,tmp/{cache,pids,sessions,sockets}}
 
-# This way any new files/features will not get accidentally lost on update
-# as they will show in unpackaged files list
-cp -a . $RPM_BUILD_ROOT%{_datadir}/%{name}
+# Check if everything is installed on update!
+
+cp -a Rakefile app lib public script test vendor $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/mail_handler/rdm-mailhandler.rb $RPM_BUILD_ROOT%{_bindir}
-#rm -r $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/sample_plugin
+install -p extra/mail_handler/rdm-mailhandler.rb $RPM_BUILD_ROOT%{_bindir}
 
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/reposman.rb $RPM_BUILD_ROOT%{_bindir}
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/svnserve.wrapper $RPM_BUILD_ROOT%{_bindir}
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/Redmine.pm $RPM_BUILD_ROOT%{perl_vendorlib}/Apache
+install -p extra/svn/reposman.rb $RPM_BUILD_ROOT%{_bindir}
+install -p extra/svn/svnserve.wrapper $RPM_BUILD_ROOT%{_bindir}
+install -p extra/svn/Redmine.pm $RPM_BUILD_ROOT%{perl_vendorlib}/Apache
 
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/config $RPM_BUILD_ROOT%{_sysconfdir}
+cp -a config $RPM_BUILD_ROOT%{_sysconfdir}
 ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/{db,files,log} $RPM_BUILD_ROOT/var/lib/%{name}
-rm -r $RPM_BUILD_ROOT%{_datadir}/%{name}/tmp
+cp -a db $RPM_BUILD_ROOT/var/lib/%{name}
 ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/files $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
-
-rm $RPM_BUILD_ROOT/var/lib/%{name}/*/delete.me
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -167,6 +181,17 @@ fi
 %{_datadir}/%{name}/files
 %{_datadir}/%{name}/log
 %{_datadir}/%{name}/tmp
+
+%files reposman
+%defattr(644,root,root,755)
+%doc extra/svn/create_views.sql
+%{_bindir}/reposman.rb
+%{_bindir}/svnserve.wrapper
+%{perl_vendorlib}/Apache/Redmine.pm
+
+%files mailhandler
+%defattr(644,root,root,755)
+%{_bindir}/rdm-mailhandler.rb
 
 %files testsuite
 %defattr(644,root,root,755)
