@@ -81,12 +81,15 @@ rm -r vendor/plugins/coderay*
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_sysconfdir},/var/lib/%{name},%{_datadir}/%{name}} \
-	$RPM_BUILD_ROOT{%{_bindir},%{perl_vendorlib}/Apache}
+install -d $RPM_BUILD_ROOT{%{_sysconfdir},%{_datadir}/%{name}} \
+	$RPM_BUILD_ROOT{%{_bindir},%{perl_vendorlib}/Apache} \
+	$RPM_BUILD_ROOT/var/lib/%{name}/{plugin_assets,tmp/{cache,pids,sessions,sockets}}
 
 # This way any new files/features will not get accidentally lost on update
 # as they will show in unpackaged files list
 cp -a . $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
 mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/mail_handler/rdm-mailhandler.rb $RPM_BUILD_ROOT%{_bindir}
 #rm -r $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/sample_plugin
@@ -96,9 +99,10 @@ mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/svnserve.wrapper $RPM_BUILD_ROOT
 mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/Redmine.pm $RPM_BUILD_ROOT%{perl_vendorlib}/Apache
 
 mv $RPM_BUILD_ROOT%{_datadir}/%{name}/config $RPM_BUILD_ROOT%{_sysconfdir}
-ln -s $RPM_BUILD_ROOT%{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
+ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-mv $RPM_BUILD_ROOT%{_datadir}/%{name}/{db,files,log,tmp} $RPM_BUILD_ROOT/var/lib/%{name}
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/{db,files,log} $RPM_BUILD_ROOT/var/lib/%{name}
+rm -r $RPM_BUILD_ROOT%{_datadir}/%{name}/tmp
 ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/files $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
@@ -152,14 +156,20 @@ fi
 %attr(644,redmine,root) /var/lib/%{name}/db/migrate/*
 %dir %attr(755,redmine,root) /var/lib/%{name}/files
 %dir %attr(755,redmine,root) /var/lib/%{name}/log
+%dir %attr(755,redmine,root) /var/lib/%{name}/plugin_assets
 %dir %attr(755,redmine,root) /var/lib/%{name}/tmp
 %dir %attr(755,redmine,root) /var/lib/%{name}/tmp/cache
 %dir %attr(755,redmine,root) /var/lib/%{name}/tmp/pids
 %dir %attr(755,redmine,root) /var/lib/%{name}/tmp/sessions
 %dir %attr(755,redmine,root) /var/lib/%{name}/tmp/sockets
+%{_datadir}/%{name}/config
+%{_datadir}/%{name}/db
+%{_datadir}/%{name}/files
+%{_datadir}/%{name}/log
+%{_datadir}/%{name}/tmp
 
 %files testsuite
 %defattr(644,root,root,755)
-%{_datadir}/%{name}/config/environments/test*.rb
+%attr(655,redmine,root) %{_sysconfdir}/config/environments/test*.rb
 %{_datadir}/%{name}/test
 %{_datadir}/%{name}/vendor/plugins/*/test
