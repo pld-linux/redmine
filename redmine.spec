@@ -121,6 +121,9 @@ install -p extra/svn/svnserve.wrapper $RPM_BUILD_ROOT%{_bindir}
 install -p extra/svn/Redmine.pm $RPM_BUILD_ROOT%{perl_vendorlib}/Apache
 
 cp -a config $RPM_BUILD_ROOT%{_sysconfdir}
+install -p config/additional_environment.rb.example $RPM_BUILD_ROOT%{_sysconfdir}/config/additional_environment.rb
+install -p config/database.yml.example $RPM_BUILD_ROOT%{_sysconfdir}/config/database.yml
+grep "^#" config/email.yml.example >$RPM_BUILD_ROOT%{_sysconfdir}/config/email.yml
 ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 cp -a db $RPM_BUILD_ROOT/var/lib/%{name}
@@ -157,7 +160,6 @@ fi
 %attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.rb
 %attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.yml
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/environments
-%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/demo.rb
 %attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/development.rb
 %attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/production.rb
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/initializers
