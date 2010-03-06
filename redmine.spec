@@ -109,6 +109,8 @@ cp -a Rakefile app lib public script test vendor $RPM_BUILD_ROOT%{_datadir}/%{na
 
 ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
+install -p public/dispatch.{cgi,fcgi}.example $RPM_BUILD_ROOT%{_datadir}/%{name}/public
+
 install -p extra/mail_handler/rdm-mailhandler.rb $RPM_BUILD_ROOT%{_bindir}
 
 install -p extra/svn/reposman.rb $RPM_BUILD_ROOT%{_bindir}
@@ -124,6 +126,8 @@ ln -s /var/lib/%{name}/files $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
 
+install %{SOURCE1} $RPM_BUILD_ROOT{%{_sysconfdir}/httpd.conf
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -135,21 +139,28 @@ if [ "$1" = "0" ]; then
 	%userremove redmine
 fi
 
+%triggerin -- apache < 2.2.0, apache-base
+%webapp_register httpd %{_webapp}
+
+%triggerun -- apache < 2.2.0, apache-base
+%webapp_unregister httpd %{_webapp}
+
 %files
 %defattr(644,root,root,755)
 %doc README.rdoc doc public/dispatch.*.example config/*.example
 %doc extra/sample_plugin
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/httpd.conf
 %dir %attr(755,redmine,root) %{_sysconfdir}/config
-%attr(655,redmine,root) %{_sysconfdir}/config/*.rb
-%attr(655,redmine,root) %{_sysconfdir}/config/*.yml
+%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.rb
+%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.yml
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/environments
-%attr(655,redmine,root) %{_sysconfdir}/config/environments/demo.rb
-%attr(655,redmine,root) %{_sysconfdir}/config/environments/development.rb
-%attr(655,redmine,root) %{_sysconfdir}/config/environments/production.rb
+%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/demo.rb
+%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/development.rb
+%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/production.rb
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/initializers
-%attr(755,redmine,root) %{_sysconfdir}/config/initializers/*.rb
+%attr(755,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/initializers/*.rb
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/locales
-%attr(755,redmine,root) %{_sysconfdir}/config/locales/*.yml
+%attr(755,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/locales/*.yml
 %{_datadir}/%{name}/Rakefile
 %{_datadir}/%{name}/app
 %{_datadir}/%{name}/lib
