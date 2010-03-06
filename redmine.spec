@@ -9,6 +9,7 @@ Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
 Source1:	%{name}.conf
+Patch0:		%{name}-pld.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
@@ -94,6 +95,8 @@ rm -r vendor/plugins/ruby-net-ldap*
 rm -r vendor/plugins/coderay*
 
 find -type f -print0 | xargs -0 dos2unix -k -q
+
+%patch0 -p1
 
 %build
 
