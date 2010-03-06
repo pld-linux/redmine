@@ -129,7 +129,7 @@ ln -s /var/lib/%{name}/files $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-install %{SOURCE1} $RPM_BUILD_ROOT{%{_sysconfdir}/httpd.conf
+install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
 
 %clean
 rm -rf $RPM_BUILD_ROOT
