@@ -134,6 +134,9 @@ ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
 
+rm $RPM_BUILD_ROOT%{_sysconfdir}/config/*.example
+rm $RPM_BUILD_ROOT%{_datadir}/%{name}/public/*.example
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
