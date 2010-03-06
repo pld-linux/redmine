@@ -93,6 +93,7 @@ Test suite for Redmine.
 rm -r vendor/gems
 rm -r vendor/plugins/ruby-net-ldap*
 rm -r vendor/plugins/coderay*
+rm -r vendor/rails
 
 find -type f -print0 | xargs -0 dos2unix -k -q
 
@@ -112,7 +113,8 @@ cp -a Rakefile app lib public script test vendor $RPM_BUILD_ROOT%{_datadir}/%{na
 
 ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
-install -p public/dispatch.{cgi,fcgi}.example $RPM_BUILD_ROOT%{_datadir}/%{name}/public
+install -p public/dispatch.cgi.example $RPM_BUILD_ROOT%{_datadir}/%{name}/public/dispatch.cgi
+install -p public/dispatch.fcgi.example $RPM_BUILD_ROOT%{_datadir}/%{name}/public/dispatch.fcgi
 
 install -p extra/mail_handler/rdm-mailhandler.rb $RPM_BUILD_ROOT%{_bindir}
 
@@ -156,19 +158,19 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc README.rdoc doc public/dispatch.*.example config/*.example
+%doc README.rdoc doc/* public/dispatch.*.example config/*.example
 %doc extra/sample_plugin
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/httpd.conf
 %dir %attr(755,redmine,root) %{_sysconfdir}/config
-%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.rb
-%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.yml
+%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.rb
+%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.yml
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/environments
-%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/development.rb
-%attr(655,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/production.rb
+%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/development.rb
+%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/production.rb
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/initializers
-%attr(755,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/initializers/*.rb
+%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/initializers/*.rb
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/locales
-%attr(755,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/locales/*.yml
+%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/locales/*.yml
 %{_datadir}/%{name}/Rakefile
 %{_datadir}/%{name}/app
 %{_datadir}/%{name}/lib
@@ -180,7 +182,15 @@ fi
 %{_datadir}/%{name}/public/stylesheets
 %{_datadir}/%{name}/public/themes
 %{_datadir}/%{name}/public/*.html
-%{_datadir}/%{name}/script
+%attr(755,redmine,root) %{_datadir}/%{name}/public/dispatch.*
+%dir %{_datadir}/%{name}/script
+%dir %{_datadir}/%{name}/script/performance
+%dir %{_datadir}/%{name}/script/process
+%attr(755,root,root) %{_datadir}/%{name}/script/[a-o]*
+%attr(755,root,root) %{_datadir}/%{name}/script/plugin
+%attr(755,root,root) %{_datadir}/%{name}/script/[q-z]*
+%attr(755,root,root) %{_datadir}/%{name}/script/performance/*
+%attr(755,root,root) %{_datadir}/%{name}/script/process/*
 %{_datadir}/%{name}/vendor
 %exclude %{_datadir}/%{name}/vendor/plugins/*/test
 %dir %attr(755,redmine,root) /var/lib/%{name}
