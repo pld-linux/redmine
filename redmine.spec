@@ -1,5 +1,7 @@
 # TODO
 # - finish spec
+# for reposman
+%include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	0.9.3
@@ -72,16 +74,37 @@ Test suite for Redmine.
 %setup -q
 
 rm -r vendor/gems
-rm -f vendor/plugins/ruby-net-ldap*
-rm -f vendor/plugins/coderay*
+rm -r vendor/plugins/ruby-net-ldap*
+rm -r vendor/plugins/coderay*
 
 %build
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT%{_datadir}/%{name}
+install -d $RPM_BUILD_ROOT{%{_sysconfdir},/var/lib/%{name},%{_datadir}/%{name}} \
+	$RPM_BUILD_ROOT{%{_bindir},%{perl_vendorlib}/Apache}
 
+# This way any new files/features will not get accidentally lost on update
+# as they will show in unpackaged files list
 cp -a . $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/mail_handler/rdm-mailhandler.rb $RPM_BUILD_ROOT%{_bindir}
+#rm -r $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/sample_plugin
+
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/reposman.rb $RPM_BUILD_ROOT%{_bindir}
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/svnserve.wrapper $RPM_BUILD_ROOT%{_bindir}
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/extra/svn/Redmine.pm $RPM_BUILD_ROOT%{perl_vendorlib}/Apache
+
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/config $RPM_BUILD_ROOT%{_sysconfdir}
+ln -s $RPM_BUILD_ROOT%{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+mv $RPM_BUILD_ROOT%{_datadir}/%{name}/{db,files,log,tmp} $RPM_BUILD_ROOT/var/lib/%{name}
+ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
+ln -s /var/lib/%{name}/files $RPM_BUILD_ROOT%{_datadir}/%{name}
+ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
+ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+rm $RPM_BUILD_ROOT/var/lib/%{name}/*/delete.me
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -96,12 +119,44 @@ fi
 
 %files
 %defattr(644,root,root,755)
+%doc README.rdoc doc public/dispatch.*.example config/*.example
+%doc extra/sample_plugin
+%dir %attr(755,redmine,root) %{_sysconfdir}/config
+%attr(655,redmine,root) %{_sysconfdir}/config/*.rb
+%attr(655,redmine,root) %{_sysconfdir}/config/*.yml
+%dir %attr(755,redmine,root) %{_sysconfdir}/config/environments
+%attr(655,redmine,root) %{_sysconfdir}/config/environments/demo.rb
+%attr(655,redmine,root) %{_sysconfdir}/config/environments/development.rb
+%attr(655,redmine,root) %{_sysconfdir}/config/environments/production.rb
+%dir %attr(755,redmine,root) %{_sysconfdir}/config/initializers
+%attr(755,redmine,root) %{_sysconfdir}/config/initializers/*.rb
+%dir %attr(755,redmine,root) %{_sysconfdir}/config/locales
+%attr(755,redmine,root) %{_sysconfdir}/config/locales/*.yml
+%{_datadir}/%{name}/Rakefile
 %{_datadir}/%{name}/app
 %{_datadir}/%{name}/lib
-%{_datadir}/%{name}/public
+%dir %{_datadir}/%{name}/public
+%{_datadir}/%{name}/public/help
+%{_datadir}/%{name}/public/images
+%{_datadir}/%{name}/public/javascripts
+%{_datadir}/%{name}/public/plugin_assets
+%{_datadir}/%{name}/public/stylesheets
+%{_datadir}/%{name}/public/themes
+%{_datadir}/%{name}/public/*.html
 %{_datadir}/%{name}/script
 %{_datadir}/%{name}/vendor
 %exclude %{_datadir}/%{name}/vendor/plugins/*/test
+%dir %attr(755,redmine,root) /var/lib/%{name}
+%dir %attr(755,redmine,root) /var/lib/%{name}/db
+%dir %attr(755,redmine,root) /var/lib/%{name}/db/migrate
+%attr(644,redmine,root) /var/lib/%{name}/db/migrate/*
+%dir %attr(755,redmine,root) /var/lib/%{name}/files
+%dir %attr(755,redmine,root) /var/lib/%{name}/log
+%dir %attr(755,redmine,root) /var/lib/%{name}/tmp
+%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/cache
+%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/pids
+%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/sessions
+%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/sockets
 
 %files testsuite
 %defattr(644,root,root,755)
