@@ -13,6 +13,7 @@ Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
 Source1:	%{name}.conf
 Patch0:		%{name}-pld.patch
+Patch1:		%{name}-ldap.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
@@ -20,6 +21,7 @@ BuildRequires:	ruby-rake >= 0.8.3
 Requires(postun):	/usr/sbin/userdel
 Requires(pre):	/bin/id
 Requires(pre):	/usr/sbin/useradd
+Requires:	apache(mod_rails)
 Requires:	ruby-RMagic
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay
@@ -33,7 +35,7 @@ Suggests:	git-core
 Suggests:	mercurial
 Suggests:	ruby-mocha
 Suggests:	ruby-mysql
-Suggests:	ruby-net-ldap
+Suggests:	ruby-ldap
 Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
 Provides:	user(redmine)
@@ -102,6 +104,7 @@ rm -r vendor/rails
 find -type f -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
+%patch1 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \

@@ -1,0 +1,93 @@
+diff -ur redmine-0.9.3/app/models/auth_source_ldap.rb redmine-0.9.3-ldap/app/models/auth_source_ldap.rb
+--- redmine-0.9.3/app/models/auth_source_ldap.rb	2010-03-07 23:29:20.233868713 +0100
++++ redmine-0.9.3-ldap/app/models/auth_source_ldap.rb	2010-03-07 23:28:36.000000000 +0100
+@@ -16,9 +16,9 @@
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ 
+ begin
+-  require 'net/ldap'
++  require 'ldap'
+ rescue LoadError
+-  # NET::LDAP is not available
++  # LDAP is not available
+ end
+ 
+ require 'iconv'
+@@ -40,14 +40,13 @@
+     return nil if login.blank? || password.blank?
+     attrs = []
+     # get user's DN
+-    ldap_con = initialize_ldap_con(self.account, self.account_password)
+-    login_filter = Net::LDAP::Filter.eq( self.attr_login, login ) 
+-    object_filter = Net::LDAP::Filter.eq( "objectClass", "*" ) 
++    ldap_con = initialize_ldap_con
++    ldap_con.bind(self.account, self.account_password)
+     dn = String.new
+-    ldap_con.search( :base => self.base_dn, 
+-                     :filter => object_filter & login_filter, 
++    ldap_con.search( self.base_dn, LDAP::LDAP_SCOPE_SUBTREE,
++                     "(&(objectClass=*)(#{self.attr_login}=#{login}))",
+                      # only ask for the DN if on-the-fly registration is disabled
+-                     :attributes=> (onthefly_register? ? ['dn', self.attr_firstname, self.attr_lastname, self.attr_mail] : ['dn'])) do |entry|
++                     (onthefly_register? ? ['dn', self.attr_firstname, self.attr_lastname, self.attr_mail] : ['dn'])) do |entry|
+       dn = entry.dn
+       attrs = [:firstname => AuthSourceLdap.get_attr(entry, self.attr_firstname),
+                :lastname => AuthSourceLdap.get_attr(entry, self.attr_lastname),
+@@ -56,22 +55,26 @@
+     end
+     return nil if dn.empty?
+     logger.debug "DN found for #{login}: #{dn}" if logger && logger.debug?
++    ldap_con.unbind
+     # authenticate user
+-    ldap_con = initialize_ldap_con(dn, password)
+-    return nil unless ldap_con.bind
++    ldap_con = initialize_ldap_con
++    ldap_con.bind(dn, password)
++    ldap_con.unbind
+     # return user's attributes
+     logger.debug "Authentication successful for '#{login}'" if logger && logger.debug?
+-    attrs    
+-  rescue  Net::LDAP::LdapError => text
+-    raise "LdapError: " + text
++    attrs
++  rescue  LDAP::ResultError => error
++    logger.fatal "Authentication failure for '#{login}' (#{error})" if logger && logger.fatal?
++    return nil
+   end
+ 
+   # test the connection to the LDAP
+   def test_connection
+-    ldap_con = initialize_ldap_con(self.account, self.account_password)
+-    ldap_con.open { }
+-  rescue  Net::LDAP::LdapError => text
+-    raise "LdapError: " + text
++    ldap_con = initialize_ldap_con
++    ldap_con.bind(self.account, self.account_password)
++    ldap_con.unbind
++  rescue  LDAP::ResultError => error
++    raise error
+   end
+  
+   def auth_method_name
+@@ -86,13 +89,14 @@
+     end
+   end
+   
+-  def initialize_ldap_con(ldap_user, ldap_password)
+-    options = { :host => self.host,
+-                :port => self.port,
+-                :encryption => (self.tls ? :simple_tls : nil)
+-              }
+-    options.merge!(:auth => { :method => :simple, :username => ldap_user, :password => ldap_password }) unless ldap_user.blank? && ldap_password.blank?
+-    Net::LDAP.new options
++  def initialize_ldap_con
++    if self.tls?
++      conn = LDAP::SSLConn.new(self.host, self.port)
++    else
++      conn = LDAP::Conn.new(self.host, self.port)
++    end
++    conn.set_option( LDAP::LDAP_OPT_PROTOCOL_VERSION, 3 )
++    conn
+   end
+   
+   def self.get_attr(entry, attr_name)
