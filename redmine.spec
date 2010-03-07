@@ -1,3 +1,6 @@
+# TODO:
+#	- other operation modes: rails/webrick, mongrel?
+#
 # for reposman
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
@@ -21,6 +24,7 @@ Requires:	ruby-RMagic
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay
 Requires:	ruby-rails >= 2.3.5
+Requires:	ruby-rake
 Requires:	ruby-rubytree
 Requires:	webapps
 Requires:	webserver(alias)
@@ -109,13 +113,11 @@ find -type f -print0 | \
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{%{_sysconfdir},%{_datadir}/%{name}} \
 	$RPM_BUILD_ROOT{%{_bindir},%{perl_vendorlib}/Apache} \
-	$RPM_BUILD_ROOT/var/lib/%{name}/{files,log,plugin_assets,tmp/{cache,pids,sessions,sockets}}
+	$RPM_BUILD_ROOT/var/lib/%{name}/{files,log,plugin_assets,tmp}
 
 # Check if everything is installed on update!
 
 cp -a Rakefile app lib public script test vendor $RPM_BUILD_ROOT%{_datadir}/%{name}
-
-ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
 install -p public/dispatch.cgi.example $RPM_BUILD_ROOT%{_datadir}/%{name}/public/dispatch.cgi
 install -p public/dispatch.fcgi.example $RPM_BUILD_ROOT%{_datadir}/%{name}/public/dispatch.fcgi
@@ -137,6 +139,7 @@ ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/files $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
+ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
 
@@ -148,6 +151,12 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 %useradd -u 212 -d %{_datadir}/%{name} -s /bin/false -c "Redmine User" -g nobody redmine
+
+%post
+cd %{_datadir}/%{name}
+# Redmine stores session data in cookies by default,
+# which requires a secret to be generated
+rake generate_session_store
 
 %postun
 if [ "$1" = "0" ]; then
@@ -205,10 +214,6 @@ fi
 %dir %attr(755,redmine,root) /var/lib/%{name}/log
 %dir %attr(755,redmine,root) /var/lib/%{name}/plugin_assets
 %dir %attr(755,redmine,root) /var/lib/%{name}/tmp
-%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/cache
-%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/pids
-%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/sessions
-%dir %attr(755,redmine,root) /var/lib/%{name}/tmp/sockets
 %{_datadir}/%{name}/config
 %{_datadir}/%{name}/db
 %{_datadir}/%{name}/files
