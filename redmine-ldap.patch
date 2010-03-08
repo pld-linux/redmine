@@ -69,7 +69,7 @@ diff -ur redmine-0.9.3/app/models/auth_source_ldap.rb redmine-0.9.3-ldap/app/mod
    end
   
    def auth_method_name
-@@ -86,13 +89,14 @@
+@@ -86,18 +89,25 @@
      end
    end
    
@@ -91,3 +91,15 @@ diff -ur redmine-0.9.3/app/models/auth_source_ldap.rb redmine-0.9.3-ldap/app/mod
    end
    
    def self.get_attr(entry, attr_name)
+     if !attr_name.blank?
+-      entry[attr_name].is_a?(Array) ? entry[attr_name].first : entry[attr_name]
++      if entry[attr_name].is_a?(Array) 
++	 val = entry[attr_name].first
++      else
++	 val = entry[attr_name]
++      end
++      val.force_encoding(Encoding::UTF_8) if val.respond_to?(:force_encoding)
++      val
+     end
+   end
+ end
