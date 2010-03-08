@@ -12,8 +12,12 @@ Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
 Source1:	%{name}.conf
+# Shove UTF-8 down rails throat, needed for rails < 3
+Source2:	%{name}-fix_params.rb
+Source3:	%{name}-fix_renderable.rb
 Patch0:		%{name}-pld.patch
 Patch1:		%{name}-ldap.patch
+Patch2:		%{name}-utf-regex.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
@@ -38,6 +42,8 @@ Suggests:	ruby-mysql
 Suggests:	ruby-ldap
 Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
+# Does not work AT ALL with rails 3 currently
+Conflicts:	ruby-rails >= 3.0
 Provides:	user(redmine)
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -105,6 +111,7 @@ find -type f -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
 %patch1 -p1
+%patch2 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \
@@ -136,6 +143,9 @@ install -p config/additional_environment.rb.example $RPM_BUILD_ROOT%{_sysconfdir
 install -p config/database.yml.example $RPM_BUILD_ROOT%{_sysconfdir}/config/database.yml
 grep "^#" config/email.yml.example >$RPM_BUILD_ROOT%{_sysconfdir}/config/email.yml
 ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
+
+install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/initializers/fix_params.rb
+install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/initializers/fix_renderable.rb
 
 cp -a db $RPM_BUILD_ROOT/var/lib/%{name}
 ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}

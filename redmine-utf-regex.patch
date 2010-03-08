@@ -1,0 +1,164 @@
+diff -ur redmine-0.9.3/app/controllers/issues_controller.rb redmine-0.9.3-utf/app/controllers/issues_controller.rb
+--- redmine-0.9.3/app/controllers/issues_controller.rb	2010-03-08 17:22:10.078182839 +0100
++++ redmine-0.9.3-utf/app/controllers/issues_controller.rb	2010-03-08 17:28:18.657123999 +0100
+@@ -224,7 +224,7 @@
+       text = @issue.description
+     end
+     content = "#{ll(Setting.default_language, :text_user_wrote, user)}\\n> "
+-    content << text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
++    content << text.to_s.strip.gsub(%r{<pre>((.|[:space:])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
+     render(:update) { |page|
+       page.<< "$('notes').value = \"#{content}\";"
+       page.show 'update'
+diff -ur redmine-0.9.3/app/controllers/messages_controller.rb redmine-0.9.3-utf/app/controllers/messages_controller.rb
+--- redmine-0.9.3/app/controllers/messages_controller.rb	2010-03-08 17:22:10.072186592 +0100
++++ redmine-0.9.3-utf/app/controllers/messages_controller.rb	2010-03-08 17:28:07.687124040 +0100
+@@ -96,7 +96,7 @@
+     subject = @message.subject.gsub('"', '\"')
+     subject = "RE: #{subject}" unless subject.starts_with?('RE:')
+     content = "#{ll(Setting.default_language, :text_user_wrote, user)}\\n> "
+-    content << text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
++    content << text.to_s.strip.gsub(%r{<pre>((.|[:space:])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
+     render(:update) { |page|
+       page << "$('reply_subject').value = \"#{subject}\";"
+       page.<< "$('message_content').value = \"#{content}\";"
+diff -ur redmine-0.9.3/app/controllers/search_controller.rb redmine-0.9.3-utf/app/controllers/search_controller.rb
+--- redmine-0.9.3/app/controllers/search_controller.rb	2010-03-08 17:22:10.071182579 +0100
++++ redmine-0.9.3-utf/app/controllers/search_controller.rb	2010-03-08 17:28:01.486187436 +0100
+@@ -61,7 +61,7 @@
+     
+     # extract tokens from the question
+     # eg. hello "bye bye" => ["hello", "bye bye"]
+-    @tokens = @question.scan(%r{((\s|^)"[\s\w]+"(\s|$)|\S+)}).collect {|m| m.first.gsub(%r{(^\s*"\s*|\s*"\s*$)}, '')}
++    @tokens = @question.scan(%r{(([:space:]|^)"[[:space:][:word:]]+"([:space:]|$)|[:space:]+)}).collect {|m| m.first.gsub(%r{(^[:space:]*"[:space:]*|[:space:]*"[:space:]*$)}, '')}
+     # tokens must be at least 2 characters long
+     @tokens = @tokens.uniq.select {|w| w.length > 1 }
+     
+diff -ur redmine-0.9.3/app/models/changeset.rb redmine-0.9.3-utf/app/models/changeset.rb
+--- redmine-0.9.3/app/models/changeset.rb	2010-03-08 17:22:10.025186088 +0100
++++ redmine-0.9.3-utf/app/models/changeset.rb	2010-03-08 17:24:51.520260172 +0100
+@@ -93,11 +93,11 @@
+     if ref_keywords.delete('*')
+       # find any issue ID in the comments
+       target_issue_ids = []
+-      comments.scan(%r{([\s\(\[,-]|^)#(\d+)(?=[[:punct:]]|\s|<|$)}).each { |m| target_issue_ids << m[1] }
++      comments.scan(%r{([[:space:]\(\[,-]|^)#(\d+)(?=[[:punct:]]|[:space:]|<|$)}).each { |m| target_issue_ids << m[1] }
+       referenced_issues += find_referenced_issues_by_id(target_issue_ids)
+     end
+     
+-    comments.scan(Regexp.new("(#{kw_regexp})[\s:]+(([\s,;&]*#?\\d+)+)", Regexp::IGNORECASE)).each do |match|
++    comments.scan(Regexp.new("(#{kw_regexp})[[:space:]:]+(([[:space:],;&]*#?\\d+)+)", Regexp::IGNORECASE)).each do |match|
+       action = match[0]
+       target_issue_ids = match[1].scan(/\d+/)
+       target_issues = find_referenced_issues_by_id(target_issue_ids)
+diff -ur redmine-0.9.3/app/models/custom_field.rb redmine-0.9.3-utf/app/models/custom_field.rb
+--- redmine-0.9.3/app/models/custom_field.rb	2010-03-08 17:22:10.021186739 +0100
++++ redmine-0.9.3-utf/app/models/custom_field.rb	2010-03-08 17:23:34.114124255 +0100
+@@ -32,7 +32,7 @@
+   validates_presence_of :name, :field_format
+   validates_uniqueness_of :name, :scope => :type
+   validates_length_of :name, :maximum => 30
+-  validates_format_of :name, :with => /^[\w\s\.\'\-]*$/i
++  validates_format_of :name, :with => /^[[:word:][:space:]\.\'\-]*$/i
+   validates_inclusion_of :field_format, :in => FIELD_FORMATS.keys
+ 
+   def initialize(attributes = nil)
+diff -ur redmine-0.9.3/app/models/issue_status.rb redmine-0.9.3-utf/app/models/issue_status.rb
+--- redmine-0.9.3/app/models/issue_status.rb	2010-03-08 17:22:10.004186506 +0100
++++ redmine-0.9.3-utf/app/models/issue_status.rb	2010-03-08 17:26:32.231129980 +0100
+@@ -23,7 +23,7 @@
+   validates_presence_of :name
+   validates_uniqueness_of :name
+   validates_length_of :name, :maximum => 30
+-  validates_format_of :name, :with => /^[\w\s\'\-]*$/i
++  validates_format_of :name, :with => /^[[:word:][:space:]\'\-]*$/i
+   validates_inclusion_of :default_done_ratio, :in => 0..100, :allow_nil => true
+ 
+   def after_save
+diff -ur redmine-0.9.3/app/models/role.rb redmine-0.9.3-utf/app/models/role.rb
+--- redmine-0.9.3/app/models/role.rb	2010-03-08 17:22:09.991181456 +0100
++++ redmine-0.9.3-utf/app/models/role.rb	2010-03-08 17:25:06.001124077 +0100
+@@ -43,7 +43,7 @@
+   validates_presence_of :name
+   validates_uniqueness_of :name
+   validates_length_of :name, :maximum => 30
+-  validates_format_of :name, :with => /^[\w\s\'\-]*$/i
++  validates_format_of :name, :with => /^[[:word:][:space:]\'\-]*$/i
+ 
+   def permissions
+     read_attribute(:permissions) || []
+diff -ur redmine-0.9.3/app/models/setting.rb redmine-0.9.3-utf/app/models/setting.rb
+--- redmine-0.9.3/app/models/setting.rb	2010-03-08 17:22:10.000186552 +0100
++++ redmine-0.9.3-utf/app/models/setting.rb	2010-03-08 17:25:52.170123775 +0100
+@@ -137,7 +137,7 @@
+   
+   # Helper that returns an array based on per_page_options setting
+   def self.per_page_options_array
+-    per_page_options.split(%r{[\s,]}).collect(&:to_i).select {|n| n > 0}.sort
++    per_page_options.split(%r{[[:space:],]}).collect(&:to_i).select {|n| n > 0}.sort
+   end
+   
+   def self.openid?
+diff -ur redmine-0.9.3/app/models/tracker.rb redmine-0.9.3-utf/app/models/tracker.rb
+--- redmine-0.9.3/app/models/tracker.rb	2010-03-08 17:22:09.999182515 +0100
++++ redmine-0.9.3-utf/app/models/tracker.rb	2010-03-08 17:25:37.190124681 +0100
+@@ -31,7 +31,7 @@
+   validates_presence_of :name
+   validates_uniqueness_of :name
+   validates_length_of :name, :maximum => 30
+-  validates_format_of :name, :with => /^[\w\s\'\-]*$/i
++  validates_format_of :name, :with => /^[[:word:][:space:]\'\-]*$/i
+ 
+   def to_s; name end
+   
+diff -ur redmine-0.9.3/app/models/user.rb redmine-0.9.3-utf/app/models/user.rb
+--- redmine-0.9.3/app/models/user.rb	2010-03-08 17:22:09.999182515 +0100
++++ redmine-0.9.3-utf/app/models/user.rb	2010-03-08 17:26:19.614187140 +0100
+@@ -58,9 +58,9 @@
+   # Login must contain lettres, numbers, underscores only
+   validates_format_of :login, :with => /^[a-z0-9_\-@\.]*$/i
+   validates_length_of :login, :maximum => 30
+-  validates_format_of :firstname, :lastname, :with => /^[\w\s\'\-\.]*$/i
++  validates_format_of :firstname, :lastname, :with => /^[[:word:][:space:]\'\-\.]*$/i
+   validates_length_of :firstname, :lastname, :maximum => 30
+-  validates_format_of :mail, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
++  validates_format_of :mail, :with => /^([^@[:space:]]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
+   validates_length_of :mail, :maximum => 60, :allow_nil => true
+   validates_confirmation_of :password, :allow_nil => true
+ 
+diff -ur redmine-0.9.3/app/models/wiki_page.rb redmine-0.9.3-utf/app/models/wiki_page.rb
+--- redmine-0.9.3/app/models/wiki_page.rb	2010-03-08 17:22:10.023186767 +0100
++++ redmine-0.9.3-utf/app/models/wiki_page.rb	2010-03-08 17:24:23.136124038 +0100
+@@ -37,7 +37,7 @@
+   attr_accessor :redirect_existing_links
+   
+   validates_presence_of :title
+-  validates_format_of :title, :with => /^[^,\.\/\?\;\|\s]*$/
++  validates_format_of :title, :with => /^[^,\.\/\?\;\|[:space:]]*$/
+   validates_uniqueness_of :title, :scope => :wiki_id, :case_sensitive => false
+   validates_associated :content
+   
+@@ -146,9 +146,9 @@
+   def initialize(content_to, content_from)
+     @content_to = content_to
+     @content_from = content_from
+-    @words = content_to.text.split(/(\s+)/)
++    @words = content_to.text.split(/([:space:]+)/)
+     @words = @words.select {|word| word != ' '}
+-    words_from = content_from.text.split(/(\s+)/)
++    words_from = content_from.text.split(/([:space:]+)/)
+     words_from = words_from.select {|word| word != ' '}    
+     @diff = words_from.diff @words
+   end
+diff -ur redmine-0.9.3/app/models/wiki.rb redmine-0.9.3-utf/app/models/wiki.rb
+--- redmine-0.9.3/app/models/wiki.rb	2010-03-08 17:22:10.004186506 +0100
++++ redmine-0.9.3-utf/app/models/wiki.rb	2010-03-08 17:26:42.109124846 +0100
+@@ -71,7 +71,7 @@
+   # turn a string into a valid page title
+   def self.titleize(title)
+     # replace spaces with _ and remove unwanted caracters
+-    title = title.gsub(/\s+/, '_').delete(',./?;|:') if title
++    title = title.gsub(/[:space:]+/, '_').delete(',./?;|:') if title
+     # upcase the first letter
+     title = (title.slice(0..0).upcase + (title.slice(1..-1) || '')) if title
+     title
