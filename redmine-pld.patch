@@ -27,6 +27,21 @@ diff -ur redmine-0.9.3/config/environment.rb redmine-0.9.3-fixes/config/environm
    
    # Load any local configuration that is kept out of source control
    # (e.g. gems, patches).
+diff -ur redmine/config/environments/production.rb redmine-0.9.3//config/environments/production.rb
+--- redmine/config/environments/production.rb	2010-03-09 17:47:15.000000000 +0100
++++ redmine-0.9.3//config/environments/production.rb	2010-03-07 14:37:34.000000000 +0100
+@@ -5,8 +5,9 @@
+ config.cache_classes = true
+ 
+ # Use a different logger for distributed setups
+-# config.logger        = SyslogLogger.new
+-
++require 'syslog_logger'
++config.logger    = SyslogLogger.new("redmine")
++config.logger.level = Logger::DEBUG
+ 
+ # Full error reports are disabled and caching is turned on
+ config.action_controller.consider_all_requests_local = false
 diff -ur redmine-0.9.3/lib/redmine/menu_manager.rb redmine-0.9.3-fixes/lib/redmine/menu_manager.rb
 --- redmine-0.9.3/lib/redmine/menu_manager.rb	2010-02-28 11:28:08.000000000 +0100
 +++ redmine-0.9.3-fixes/lib/redmine/menu_manager.rb	2010-03-06 13:05:22.000000000 +0100
