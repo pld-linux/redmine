@@ -26,7 +26,7 @@ Requires(postun):	/usr/sbin/userdel
 Requires(pre):	/bin/id
 Requires(pre):	/usr/sbin/useradd
 Requires:	apache(mod_rails)
-Requires:	ruby-RMagic
+Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay
 Requires:	ruby-rails >= 2.3.5
@@ -38,7 +38,7 @@ Suggests:	cvs
 Suggests:	git-core
 Suggests:	mercurial
 Suggests:	ruby-mocha
-Suggests:	ruby-mysql
+Suggests:	ruby-mysql-library
 Suggests:	ruby-ldap
 Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
@@ -144,8 +144,8 @@ install -p config/database.yml.example $RPM_BUILD_ROOT%{_sysconfdir}/config/data
 grep "^#" config/email.yml.example >$RPM_BUILD_ROOT%{_sysconfdir}/config/email.yml
 ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/initializers/fix_params.rb
-install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/initializers/fix_renderable.rb
+install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_params.rb
+install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_renderable.rb
 
 cp -a db $RPM_BUILD_ROOT/var/lib/%{name}
 ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
