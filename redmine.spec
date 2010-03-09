@@ -6,7 +6,7 @@
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	0.9.3
-Release:	0.1
+Release:	0.6
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
@@ -15,9 +15,12 @@ Source1:	%{name}.conf
 # Shove UTF-8 down rails throat, needed for rails < 3
 Source2:	%{name}-fix_params.rb
 Source3:	%{name}-fix_renderable.rb
+Source4:	%{name}-fix_utf.rb
 Patch0:		%{name}-pld.patch
 Patch1:		%{name}-ldap.patch
 Patch2:		%{name}-utf-regex.patch
+Patch3:		%{name}-nogems.patch
+Patch4:		%{name}-maildomain.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
@@ -107,11 +110,13 @@ rm -r vendor/plugins/ruby-net-ldap*
 rm -r vendor/plugins/coderay*
 rm -r vendor/rails
 
-find -type f -print0 | xargs -0 dos2unix -k -q
+find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
 %patch1 -p1
 %patch2 -p1
+%patch3 -p1
+%patch4 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \
@@ -146,6 +151,7 @@ ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_params.rb
 install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_renderable.rb
+install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_utf.rb
 
 cp -a db $RPM_BUILD_ROOT/var/lib/%{name}
 ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
@@ -159,17 +165,13 @@ install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
 rm $RPM_BUILD_ROOT%{_sysconfdir}/config/*.example
 rm $RPM_BUILD_ROOT%{_datadir}/%{name}/public/*.example
 
+%{__sed} -i -e 's,^RAILS_ROOT = .*,RAILS_ROOT = "%{_datadir}/%{name}",' $RPM_BUILD_ROOT%{_sysconfdir}/config/boot.rb
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %pre
 %useradd -u 212 -d %{_datadir}/%{name} -s /bin/false -c "Redmine User" -g nobody redmine
-
-%post
-cd %{_datadir}/%{name}
-# Redmine stores session data in cookies by default,
-# which requires a secret to be generated
-rake generate_session_store
 
 %postun
 if [ "$1" = "0" ]; then
@@ -197,10 +199,11 @@ fi
 %attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/initializers/*.rb
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/locales
 %attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/locales/*.yml
+%dir %{_datadir}/%{name}
+%dir %{_datadir}/%{name}/public
 %{_datadir}/%{name}/Rakefile
 %{_datadir}/%{name}/app
 %{_datadir}/%{name}/lib
-%dir %{_datadir}/%{name}/public
 %{_datadir}/%{name}/public/help
 %{_datadir}/%{name}/public/images
 %{_datadir}/%{name}/public/javascripts
