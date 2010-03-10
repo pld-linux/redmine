@@ -38,7 +38,7 @@ diff -ur redmine/config/environments/production.rb redmine-0.9.3//config/environ
 -
 +require 'syslog_logger'
 +config.logger    = SyslogLogger.new("redmine")
-+config.logger.level = Logger::DEBUG
++config.logger.level = Logger::INFO
  
  # Full error reports are disabled and caching is turned on
  config.action_controller.consider_all_requests_local = false
