@@ -191,7 +191,7 @@ fi
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/httpd.conf
 %dir %attr(755,redmine,root) %{_sysconfdir}/config
 %attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.rb
-%attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.yml
+%attr(640,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.yml
 %dir %attr(755,redmine,root) %{_sysconfdir}/config/environments
 %attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/development.rb
 %attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/environments/production.rb
