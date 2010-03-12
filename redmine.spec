@@ -11,16 +11,20 @@ License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
 # Source0-md5:	5a95eec4d26ec3819ffeff42137d5023
-Source1:	%{name}.conf
+Source1:	%{name}-rfpdf.tar.bz2
+# Source1-md5:	83da153b550237f47a3a3c1c2acaac20
+Source2:	%{name}.conf
 # Shove UTF-8 down rails throat, needed for rails < 3
-Source2:	%{name}-fix_params.rb
-Source3:	%{name}-fix_renderable.rb
-Source4:	%{name}-fix_utf.rb
+Source3:	%{name}-fix_params.rb
+Source4:	%{name}-fix_renderable.rb
+Source5:	%{name}-fix_utf.rb
 Patch0:		%{name}-pld.patch
 Patch1:		%{name}-ldap.patch
 Patch2:		%{name}-utf-regex.patch
 Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
+Patch5:		%{name}-csv-utf.patch
+Patch6:		%{name}-rfpdf.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
@@ -110,6 +114,10 @@ rm -r vendor/plugins/ruby-net-ldap*
 rm -r vendor/plugins/coderay*
 rm -r vendor/rails
 
+# Replace rfpdf plugin with something that groks UTF
+rm -r vendor/plugins/rfpdf
+%{__tar} xf %{SOURCE1} -C vendor/plugins/
+
 find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
@@ -117,6 +125,8 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
+%patch5 -p1
+%patch6 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \
@@ -149,9 +159,9 @@ install -p config/database.yml.example $RPM_BUILD_ROOT%{_sysconfdir}/config/data
 grep "^#" config/email.yml.example >$RPM_BUILD_ROOT%{_sysconfdir}/config/email.yml
 ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
-install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_params.rb
-install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_renderable.rb
-install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_utf.rb
+install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_params.rb
+install %{SOURCE4} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_renderable.rb
+install %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_utf.rb
 
 cp -a db $RPM_BUILD_ROOT/var/lib/%{name}
 ln -s /var/lib/%{name}/db $RPM_BUILD_ROOT%{_datadir}/%{name}
@@ -160,7 +170,7 @@ ln -s /var/lib/%{name}/log $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/tmp $RPM_BUILD_ROOT%{_datadir}/%{name}
 ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
-install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
+install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
 
 rm $RPM_BUILD_ROOT%{_sysconfdir}/config/*.example
 rm $RPM_BUILD_ROOT%{_datadir}/%{name}/public/*.example
@@ -188,6 +198,7 @@ fi
 %defattr(644,root,root,755)
 %doc README.rdoc doc/* public/dispatch.*.example config/*.example
 %doc extra/sample_plugin
+%dir %attr(750,root,http) %{_sysconfdir}
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/httpd.conf
 %dir %attr(755,redmine,root) %{_sysconfdir}/config
 %attr(644,redmine,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/config/*.rb
