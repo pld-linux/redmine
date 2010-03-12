@@ -1,0 +1,1224 @@
+diff -urN redmine-0.9.3/app/helpers/repositories_helper.rb marutosi-redmine-b34d7e8/app/helpers/repositories_helper.rb
+--- redmine-0.9.3/app/helpers/repositories_helper.rb	2010-02-28 11:28:05.000000000 +0100
++++ marutosi-redmine-b34d7e8/app/helpers/repositories_helper.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -158,13 +158,27 @@
+   def darcs_field_tags(form, repository)
+       content_tag('p', form.text_field(:url, :label => 'Root directory', :size => 60, :required => true, :disabled => (repository && !repository.new_record?)))
+   end
+-  
++
+   def mercurial_field_tags(form, repository)
+-      content_tag('p', form.text_field(:url, :label => 'Root directory', :size => 60, :required => true, :disabled => (repository && !repository.root_url.blank?)))
++      content_tag('p', form.text_field(
++          :url,
++          :label => 'Root directory',
++          :size => 60,
++          :required => true,
++          ## Mercurial repository is removable.
++          # :disabled => (repository && !repository.root_url.blank?)
++          :disabled => false
++       ))
+   end
+ 
+   def git_field_tags(form, repository)
+-      content_tag('p', form.text_field(:url, :label => 'Path to .git directory', :size => 60, :required => true, :disabled => (repository && !repository.root_url.blank?)))
++      content_tag('p', form.text_field(
++        :url,
++        :label => 'Path to .git directory',
++        :size => 60,
++        :required => true,
++        :disabled => (repository && !repository.root_url.blank?)
++     ))
+   end
+ 
+   def cvs_field_tags(form, repository)
+diff -urN redmine-0.9.3/app/models/repository/mercurial.rb marutosi-redmine-b34d7e8/app/models/repository/mercurial.rb
+--- redmine-0.9.3/app/models/repository/mercurial.rb	2010-02-28 11:28:05.000000000 +0100
++++ marutosi-redmine-b34d7e8/app/models/repository/mercurial.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -18,77 +18,309 @@
+ require 'redmine/scm/adapters/mercurial_adapter'
+ 
+ class Repository::Mercurial < Repository
+-  attr_protected :root_url
++  attr_protected        :root_url
+   validates_presence_of :url
+ 
++  @@limit_check_strip       = 100
++  @@num_convert_redmine_0_9 =  20
++
+   def scm_adapter
+     Redmine::Scm::Adapters::MercurialAdapter
+   end
+-  
++
+   def self.scm_name
+     'Mercurial'
+   end
+-  
++
++  def branches
++    scm.branches
++  end
++
++  def tags
++    scm.tags
++  end
++
+   def entries(path=nil, identifier=nil)
+-    entries=scm.entries(path, identifier)
++    entries=scm.entries(path, identifier,:include_file_revs => true )
+     if entries
+       entries.each do |entry|
+-        next unless entry.is_file?
+-        # Set the filesize unless browsing a specific revision
+-        if identifier.nil?
+-          full_path = File.join(root_url, entry.path)
+-          entry.size = File.stat(full_path).size if File.file?(full_path)
+-        end
+-        # Search the DB for the entry's last change
+-        change = changes.find(:first, :conditions => ["path = ?", scm.with_leading_slash(entry.path)], :order => "#{Changeset.table_name}.committed_on DESC")
+-        if change
+-          entry.lastrev.identifier = change.changeset.revision
+-          entry.lastrev.name = change.changeset.revision
+-          entry.lastrev.author = change.changeset.committer
+-          entry.lastrev.revision = change.revision
++        if entry && entry.lastrev && entry.lastrev.identifier
++          rev = changesets.find(
++              :first,
++              :conditions => [ "revision = ?" , entry.lastrev.identifier ]
++            )
++          next if rev
++          rev = changesets.find(
++              :first,
++              :conditions => ["scmid LIKE ?", entry.lastrev.identifier + '%']
++            )
++          entry.lastrev.identifier = rev.revision if rev
+         end
+       end
+     end
+     entries
+   end
+ 
++  # TODO:
++  #   This logic fails in following case.
++  #
++  # Before
++  #
++  #   /-C
++  # A-------B
++  #
++  # After
++  #   
++  #   /-D
++  # A-------B
++  #
++  # This is very very rare case.
++  #
++  # For this case, we need to store HEAD info on DB?
++  # http://www.redmine.org/issues/4773#note-11
++  #
+   def fetch_changesets
+     scm_info = scm.info
+-    if scm_info
+-      # latest revision found in database
+-      db_revision = latest_changeset ? latest_changeset.revision.to_i : -1
+-      # latest revision in the repository
+-      latest_revision = scm_info.lastrev
+-      return if latest_revision.nil?
+-      scm_revision = latest_revision.identifier.to_i
+-      if db_revision < scm_revision
+-        logger.debug "Fetching changesets for repository #{url}" if logger && logger.debug?
+-        identifier_from = db_revision + 1
+-        while (identifier_from <= scm_revision)
+-          # loads changesets by batches of 100
+-          identifier_to = [identifier_from + 99, scm_revision].min
+-          revisions = scm.revisions('', identifier_from, identifier_to, :with_paths => true)
+-          transaction do
+-            revisions.each do |revision|
+-              changeset = Changeset.create(:repository => self,
+-                                           :revision => revision.identifier,
+-                                           :scmid => revision.scmid,
+-                                           :committer => revision.author, 
+-                                           :committed_on => revision.time,
+-                                           :comments => revision.message)
+-              
+-              revision.paths.each do |change|
+-                Change.create(:changeset => changeset,
+-                              :action => change[:action],
+-                              :path => change[:path],
+-                              :from_path => change[:from_path],
+-                              :from_revision => change[:from_revision])
++    # Backout Redmine 0.9.x
++    # return unless scm_info or scm_info.lastrev.nil?
++    return unless scm_info
++
++    transaction do
++      Changeset.update_all(
++        "scm_order = -1" ,
++        ["repository_id = ? AND scm_order is null", id]
++      )
++    end
++
++    identifier_from = 0
++
++    transaction do
++      tip_on_db = changesets.find(:first, :order => 'scm_order DESC')
++      tip_on_db = convert_changeset(tip_on_db)  if ( tip_on_db && ( tip_on_db.scm_order == -1 ) )
++      tip_revno_on_db       = -1
++      hg_revno_dbtip        = -1
++      if tip_on_db
++        tip_revno_on_db = tip_on_db.scm_order
++        revs = scm.revisions( nil, tip_on_db.scmid, tip_on_db.scmid,
++                            :lite => true)
++        hg_revno_dbtip = revs.first.scm_order if revs && revs.first
++      end
++
++      # Redmine cannot check changeset.count == scm.num_revisions
++      # because Redmine ver.0.9.x has stripped revision on DB
++      # and 'revision' is uniq.
++      if ( tip_revno_on_db == hg_revno_dbtip )
++        identifier_from = tip_revno_on_db   + 1
++      else
++        # At Redmine SVN r3394, git check history editing for only one week.
++        # Mercurial has revision number,
++        # so Redmine can check from big revision number.
++        # And strip revision in middle of history on shared repository
++        # is very rare case.
++        ver09x_changeset_first =
++          changesets.find(:first,:conditions =>[ "scm_order = -1" ] )
++        if ( ver09x_changeset_first )
++          convert_changesets(@@num_convert_redmine_0_9)
++        end
++        converted_cs    = nil
++        flag_loop_break = false
++        convert_limit   = @@limit_check_strip
++        changesets.find(
++             :all,
++             :order => 'scm_order DESC',
++             :limit => convert_limit).each do |cs|
++          prev_no      = cs.scm_order
++          converted_cs = convert_changeset(cs)
++          if ( converted_cs && converted_cs.scm_order )
++            if ( converted_cs.scm_order == prev_no )
++                changesets.find(:all,:conditions =>
++                  [ "scm_order = ? AND scmid != ?" , cs.scm_order , cs.scmid ]
++                 ).each do |cs1|
++                convert_changeset(cs1)
++              end
++              flag_loop_break = true
++              break
++            end
++          end
++        end
++        if ( flag_loop_break )
++          identifier_from = converted_cs.scm_order + 1
++        else
++          identifier_from = [scm.num_revisions - convert_limit , 0].max
++        end
++      end
++    end
++
++    scm_revision    = scm.num_revisions - 1
++    # Reffered from Subversion logic.
++    while (identifier_from <= scm_revision)
++        transaction do
++          identifier_to = [identifier_from + 19, scm_revision].min
++          revisions = scm.revisions(
++              nil, identifier_from, identifier_to )
++          if revisions
++            revisions.each do |rev|
++              dups = changesets.find(
++                :all,
++                :conditions =>["scmid = ? or scmid = ? " ,
++                                 rev.scmid , rev.identifier]
++              )
++              unless dups.empty?
++                dups.each do |cs1|
++                  ## There is no way to store
++                  ## Redmine 0.9.x original revision number.
++                  cs1.scmid     = rev.scmid
++                  cs1.scm_order = rev.scm_order.to_i
++                  cs1.save
++                end
++                next
+               end
++              rev.save(self)
+             end
+-          end unless revisions.nil?
++          end
+           identifier_from = identifier_to + 1
+         end
++    end
++  end
++
++  # TODO:
++  #  1. Mercurial has Named branches.
++  #     http://mercurial.selenic.com/wiki/NamedBranches
++  #   a)
++  #      Mercurial has --only-branch option.
++  #      But, this is show this branch only.
++  #      TortoiseHg 0.9 Repository Explorer is different.
++  #      How does TortoiseHg handle branches?
++  #   b)
++  #     If no changeset on this named branch,
++  #     no revisons show on repository tab.
++  #   c)
++  #      Mercurial version 1.2 introduced the ability to close a branch.
++  #      http://mercurial.selenic.com/wiki/PruningDeadBranches#Closing_branches
++  #
++  #  2.
++  #    If Setting.autofetch_changesets is off,
++  #    no revisons show on repository tab.
++  #
++  def latest_changesets(path, rev, limit=10)
++    branch = nil
++    if branches.index(rev)
++      branch = rev
++    end
++    revisions = scm.revisions(
++                  path, rev, 0, :limit => limit,
++                  :lite => true , :branch => branch
++             )
++
++    return [] if revisions.nil? or revisions.empty?
++
++    # Redmine 0.9.x changeset scmid is short id.
++     changesets.find(
++       :all, 
++       :conditions => [
++        "scmid IN (?) or scmid IN (?)",
++        # revisions.map!{|c| c.scmid} ,
++        revisions.map{|c| c.scmid} ,
++        revisions.map{|c| c.identifier}
++       ]
++     )
++  end
++
++  def diff(path, rev, rev_to)
++    from_scmid = rev
++    if ( rev =~ /^\d*$/ )
++      from_rev = find_changeset_by_name(rev)
++      from_scmid = from_rev.scmid if from_rev
++    end
++    return nil if from_scmid.nil?
++    to_scmid = rev_to
++    if ( rev_to =~ /^\d*$/ )
++      to_rev   = find_changeset_by_name(rev_to)
++      to_scmid   = to_rev.scmid   if to_rev
++    end
++    scm.diff(path, from_scmid, to_scmid)
++  end
++
++  # Redmine 0.9.x has revision with revision number.
++  # TODO:
++  #   In case of strip, revision number is renumberd,
++  #   this logic fails?
++  #   We need to test with fixtures?
++  #   And tag and branch can use '\d'???
++  def find_changeset_by_name(name)
++    if name
++      changesets.find(:first, :conditions => (name.match(/^\d*$/) ? ["revision = ?", name.to_s] : ["scmid LIKE ?", name + '%']))
++    else
++      nil
++    end
++  end
++
++  # This method is not used now.
++  # But, I plan to use in rake task.
++  def convert_changesets_all
++    changesets.find_each(
++           :conditions => [ "scm_order = -1 or scm_order is null" ],
++           :batch_size => 100) do |cs|
++      convert_changeset(cs)
++    end
++  end
++
++  def convert_changesets(limit=10)
++    changesets.find(
++             :all,
++             :conditions =>[ "scm_order = -1 or scm_order is null" ],
++             :limit => limit).each do |cs|
++      convert_changeset(cs)
++    end
++  end
++
++  # Mercurial revision number is sequential from 0.
++  # And Mercurial has multipile heads.
++  # If one head in middle of history was stripped,
++  # revision number was renumbered.
++  # In this case, Redmine 0.9.x had duplicate scmid on DB.
++  # 
++  # Because revision is uniq on table, convert fails.
++  # And "rNN" is written in Wiki, issue message, etc.
++  def convert_changeset(cs)
++        ret  = cs
++        revs = scm.revisions(nil, cs.scmid, cs.scmid, :lite => true)
++        rev  = nil
++        rev  = revs.first if revs
++        if rev
++          ret = convert_changeset_with_revision(cs, rev)
++        else
++          cs.delete
++          ret = nil
++        end
++        ret
++  end
++
++  def convert_changeset_with_revision(cs, rev)
++    cs.scm_order = rev.scm_order.to_i
++    if false
++      dup_first1 = changesets.find(
++        :first,
++        :conditions =>["revision = ?" , rev.identifier ]
++      )
++      if dup_first1.nil?
++      then
++        ## There is no way to store
++        ## Redmine 0.9.x original revision number.
++        # cs.revision  = rev.identifier  if cs.revision  != rev.identifier
+       end
+     end
++    dup_first = changesets.find(
++      :first,
++      :conditions =>["scmid = ?" , rev.scmid ]
++    )
++    if dup_first.nil?
++    then
++      cs.scmid     = rev.scmid
++    end
++
++    cs.save
++    ret = cs
++    ret
+   end
+ end
+diff -urN redmine-0.9.3/app/models/repository.rb marutosi-redmine-b34d7e8/app/models/repository.rb
+--- redmine-0.9.3/app/models/repository.rb	2010-02-28 11:28:06.000000000 +0100
++++ marutosi-redmine-b34d7e8/app/models/repository.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -17,7 +17,7 @@
+ 
+ class Repository < ActiveRecord::Base
+   belongs_to :project
+-  has_many :changesets, :order => "#{Changeset.table_name}.committed_on DESC, #{Changeset.table_name}.id DESC"
++  has_many :changesets, :order => "#{Changeset.table_name}.scm_order DESC, #{Changeset.table_name}.committed_on DESC, #{Changeset.table_name}.id DESC"
+   has_many :changes, :through => :changesets
+   
+   # Raw SQL to delete changesets and changes in the database
+@@ -96,7 +96,7 @@
+   def find_changeset_by_name(name)
+     changesets.find(:first, :conditions => (name.match(/^\d*$/) ? ["revision = ?", name.to_s] : ["revision LIKE ?", name + '%']))
+   end
+-  
++
+   def latest_changeset
+     @latest_changeset ||= changesets.find(:first)
+   end
+@@ -105,17 +105,18 @@
+   # Default behaviour is to search in cached changesets
+   def latest_changesets(path, rev, limit=10)
+     if path.blank?
++       # this is defined at "has_many"
++       # :order => "#{Changeset.table_name}.committed_on DESC, #{Changeset.table_name}.id DESC",
+       changesets.find(:all, :include => :user,
+-                            :order => "#{Changeset.table_name}.committed_on DESC, #{Changeset.table_name}.id DESC",
+                             :limit => limit)
+     else
+       changes.find(:all, :include => {:changeset => :user}, 
+                          :conditions => ["path = ?", path.with_leading_slash],
+-                         :order => "#{Changeset.table_name}.committed_on DESC, #{Changeset.table_name}.id DESC",
++                         :order => "#{Changeset.table_name}.scm_order DESC, #{Changeset.table_name}.committed_on DESC, #{Changeset.table_name}.id DESC",
+                          :limit => limit).collect(&:changeset)
+     end
+   end
+-    
++
+   def scan_changesets_for_issue_ids
+     self.changesets.each(&:scan_comment_for_issue_ids)
+   end
+diff -urN redmine-0.9.3/app/views/repositories/revision.rhtml marutosi-redmine-b34d7e8/app/views/repositories/revision.rhtml
+--- redmine-0.9.3/app/views/repositories/revision.rhtml	2010-02-28 11:28:06.000000000 +0100
++++ marutosi-redmine-b34d7e8/app/views/repositories/revision.rhtml	2010-03-09 08:13:32.000000000 +0100
+@@ -21,7 +21,9 @@
+ 
+ <h2><%= l(:label_revision) %> <%= format_revision(@changeset.revision) %></h2>
+ 
+-<p><% if @changeset.scmid %>ID: <%= @changeset.scmid %><br /><% end %>
++<p>
++<% if @changeset.scmid %>ID: <%= @changeset.scmid %><br /><% end %>
++<% if @changeset.scm_order %>SCM Order: <%= @changeset.scm_order %><br /><% end %>
+ <span class="author"><%= authoring(@changeset.committed_on, @changeset.author) %></span></p>
+ 
+ <%= textilizable @changeset.comments %>
+diff -urN redmine-0.9.3/db/migrate/20100222000000_add_scm_order_to_changesets.rb marutosi-redmine-b34d7e8/db/migrate/20100222000000_add_scm_order_to_changesets.rb
+--- redmine-0.9.3/db/migrate/20100222000000_add_scm_order_to_changesets.rb	1970-01-01 01:00:00.000000000 +0100
++++ marutosi-redmine-b34d7e8/db/migrate/20100222000000_add_scm_order_to_changesets.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -0,0 +1,12 @@
++
++class AddScmOrderToChangesets < ActiveRecord::Migration
++  def self.up
++    add_column :changesets, :scm_order, :integer,  :null => true
++    add_index  :changesets, :scm_order
++  end
++
++  def self.down
++    remove_index  :changesets, :scm_order
++    remove_column :changesets, :scm_order
++  end
++end
+diff -urN redmine-0.9.3/.gitignore marutosi-redmine-b34d7e8/.gitignore
+--- redmine-0.9.3/.gitignore	2010-02-28 11:28:09.000000000 +0100
++++ marutosi-redmine-b34d7e8/.gitignore	2010-03-09 08:13:32.000000000 +0100
+@@ -17,3 +17,7 @@
+ /tmp/sockets/*
+ /tmp/test/*
+ /vendor/rails
++
++/.hg/
++/.hgignore
++/.hgtags
+diff -urN redmine-0.9.3/lib/redmine/scm/adapters/abstract_adapter.rb marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/abstract_adapter.rb
+--- redmine-0.9.3/lib/redmine/scm/adapters/abstract_adapter.rb	2010-02-28 11:28:08.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/abstract_adapter.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -269,9 +269,10 @@
+           }.last
+         end 
+       end
+-      
++
++
+       class Revision
+-        attr_accessor :identifier, :scmid, :name, :author, :time, :message, :paths, :revision, :branch
++        attr_accessor :identifier, :scmid, :name, :author, :time, :message, :paths, :revision, :branch, :scm_order
+ 
+         def initialize(attributes={})
+           self.identifier = attributes[:identifier]
+@@ -283,6 +284,7 @@
+           self.paths = attributes[:paths]
+           self.revision = attributes[:revision]
+           self.branch = attributes[:branch]
++          self.scm_order = attributes[:scm_order]
+         end
+ 
+         def save(repo)
+@@ -293,8 +295,9 @@
+               :scmid => scmid,
+               :committer => author, 
+               :committed_on => time,
+-              :comments => message)
+-            
++              :comments  => message   ,
++              :scm_order => scm_order
++            )
+             if changeset.save
+               paths.each do |file|
+                 Change.create(
+@@ -306,7 +309,7 @@
+           end
+         end
+       end
+-        
++
+       class Annotate
+         attr_reader :lines, :revisions
+         
+diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5-lite.tmpl marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5-lite.tmpl
+--- redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5-lite.tmpl	1970-01-01 01:00:00.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5-lite.tmpl	2010-03-09 08:13:32.000000000 +0100
+@@ -0,0 +1,8 @@
++changeset = 'This template must be used with --debug option\n'
++changeset_quiet =  'This template must be used with --debug option\n'
++changeset_verbose = 'This template must be used with --debug option\n'
++changeset_debug = '<logentry revision="{rev}" shortnode="{node|short}" node="{node}">\n<author>{author|escape}</author>\n<date>{date|isodate}</date>\n<msg>{desc|escape}</msg>\n{tags}</logentry>\n\n'
++
++tag = '<tag>{tag|escape}</tag>\n'
++header='<?xml version="1.0" encoding="UTF-8" ?>\n<log>\n\n'
++# footer="</log>"
+\ No newline at end of file
+diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5.tmpl marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5.tmpl
+--- redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5.tmpl	2010-02-28 11:28:08.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-0.9.5.tmpl	2010-03-09 08:13:32.000000000 +0100
+@@ -1,7 +1,7 @@
+ changeset = 'This template must be used with --debug option\n'
+ changeset_quiet =  'This template must be used with --debug option\n'
+ changeset_verbose = 'This template must be used with --debug option\n'
+-changeset_debug = '<logentry revision="{rev}" node="{node|short}">\n<author>{author|escape}</author>\n<date>{date|isodate}</date>\n<paths>\n{files}{file_adds}{file_dels}{file_copies}</paths>\n<msg>{desc|escape}</msg>\n{tags}</logentry>\n\n'
++changeset_debug = '<logentry revision="{rev}" shortnode="{node|short}" node="{node}">\n<author>{author|escape}</author>\n<date>{date|isodate}</date>\n<paths>\n{files}{file_adds}{file_dels}{file_copies}</paths>\n<msg>{desc|escape}</msg>\n{tags}</logentry>\n\n'
+ 
+ file = '<path action="M">{file|escape}</path>\n'
+ file_add = '<path action="A">{file_add|escape}</path>\n'
+diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-1.0-lite.tmpl marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-1.0-lite.tmpl
+--- redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-1.0-lite.tmpl	1970-01-01 01:00:00.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-1.0-lite.tmpl	2010-03-09 08:13:32.000000000 +0100
+@@ -0,0 +1,8 @@
++changeset = 'This template must be used with --debug option\n'
++changeset_quiet =  'This template must be used with --debug option\n'
++changeset_verbose = 'This template must be used with --debug option\n'
++changeset_debug = '<logentry revision="{rev}" shortnode="{node|short}" node="{node}">\n<author>{author|escape}</author>\n<date>{date|isodate}</date>\n<paths />\n<msg>{desc|escape}</msg>\n{tags}</logentry>\n\n'
++
++tag = '<tag>{tag|escape}</tag>\n'
++header='<?xml version="1.0" encoding="UTF-8" ?>\n<log>\n\n'
++# footer="</log>"
+diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-1.0.tmpl marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-1.0.tmpl
+--- redmine-0.9.3/lib/redmine/scm/adapters/mercurial/hg-template-1.0.tmpl	2010-02-28 11:28:08.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial/hg-template-1.0.tmpl	2010-03-09 08:13:32.000000000 +0100
+@@ -1,7 +1,7 @@
+ changeset = 'This template must be used with --debug option\n'
+ changeset_quiet =  'This template must be used with --debug option\n'
+ changeset_verbose = 'This template must be used with --debug option\n'
+-changeset_debug = '<logentry revision="{rev}" node="{node|short}">\n<author>{author|escape}</author>\n<date>{date|isodate}</date>\n<paths>\n{file_mods}{file_adds}{file_dels}{file_copies}</paths>\n<msg>{desc|escape}</msg>\n{tags}</logentry>\n\n'
++changeset_debug = '<logentry revision="{rev}" shortnode="{node|short}" node="{node}">\n<author>{author|escape}</author>\n<date>{date|isodate}</date>\n<paths>\n{file_mods}{file_adds}{file_dels}{file_copies}</paths>\n<msg>{desc|escape}</msg>\n{tags}</logentry>\n\n'
+ 
+ file_mod = '<path action="M">{file_mod|escape}</path>\n'
+ file_add = '<path action="A">{file_add|escape}</path>\n'
+diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial_adapter.rb marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial_adapter.rb
+--- redmine-0.9.3/lib/redmine/scm/adapters/mercurial_adapter.rb	2010-02-28 11:28:08.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/redmine/scm/adapters/mercurial_adapter.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -16,24 +16,30 @@
+ # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ 
+ require 'redmine/scm/adapters/abstract_adapter'
++require 'rexml/document'
+ 
+ module Redmine
+   module Scm
+-    module Adapters    
++    module Adapters
+       class MercurialAdapter < AbstractAdapter
+-        
+         # Mercurial executable name
+         HG_BIN = "hg"
+         TEMPLATES_DIR = File.dirname(__FILE__) + "/mercurial"
+         TEMPLATE_NAME = "hg-template"
+         TEMPLATE_EXTENSION = "tmpl"
+-        
++
+         class << self
++          @@limit_include_file_revs = 20
++          @@has_size_ext            = true
++
+           def client_version
+-            @@client_version ||= (hgversion || [])
++            @@client_version        ||= (hgversion || [])
+           end
+-          
+-          def hgversion  
++
++          # TODO:
++          #  Mercurial version 1.2 introduced the ability to close a branch.
++          #  http://mercurial.selenic.com/wiki/PruningDeadBranches#Closing_branches
++          def hgversion
+             # The hg version is expressed either as a
+             # release number (eg 0.9.5 or 1.0) or as a revision
+             # id composed of 12 hexa characters.
+@@ -42,41 +48,132 @@
+               theversion.split(".").collect(&:to_i)
+             end
+           end
+-          
++
+           def hgversion_from_command_line
+             %x{#{HG_BIN} --version}.match(/\(version (.*)\)/)[1]
+           end
+-          
++
+           def template_path
+             @@template_path ||= template_path_for(client_version)
+           end
+-          
+-          def template_path_for(version)
++
++          def lite_template_path
++            @@lite_template_path ||= template_path_for(client_version,'lite')
++          end
++
++          def template_path_for(version,style=nil)
+             if ((version <=> [0,9,5]) > 0) || version.empty?
+               ver = "1.0"
+             else
+               ver = "0.9.5"
+             end
+-            "#{TEMPLATES_DIR}/#{TEMPLATE_NAME}-#{ver}.#{TEMPLATE_EXTENSION}"
++            if style
++              tmpl = "#{TEMPLATES_DIR}/#{TEMPLATE_NAME}-#{ver}-#{style}.#{TEMPLATE_EXTENSION}"
++            else
++              tmpl = "#{TEMPLATES_DIR}/#{TEMPLATE_NAME}-#{ver}.#{TEMPLATE_EXTENSION}"
++            end
++            tmpl
+           end
+         end
+-        
+-        def info
+-          cmd = "#{HG_BIN} -R #{target('')} root"
+-          root_url = nil
++
++        # Mercurial default branch is "default".
++        # But, Mercurial has multipile heads.
++        def default_branch
++          @default_branch ||= 'tip'
++        end
++
++        def branches
++          @branches ||= get_branches
++        end
++
++        # TODO:
++        #  Mercurial version 1.2 introduced the ability to close a branch.
++        #  http://mercurial.selenic.com/wiki/PruningDeadBranches#Closing_branches
++        def get_branches
++          branches = []
++          cmd = "#{HG_BIN} -R #{target('')} branches"
++          shellout(cmd) do |io|
++            io.each_line do |line|
++              branches << line.chomp.match('^([^:]+[^\s]+)[\s]+[\d]+:.*$')[1]
++            end
++          end
++          branches
++        end
++
++        def tags
++          @tags ||= get_tags
++        end
++
++        def get_tags
++          tags = []
++          cmd = "#{HG_BIN} -R #{target('')} tags -v"
+           shellout(cmd) do |io|
+-            root_url = io.gets
++            io.each_line do |line|
++              strs = line.chomp.match('^([^:]+[^\s]+)[\s]+[\d]+:(.*)$')
++              if strs[2] !~ /[\s]+local/
++                tags << strs[1]
++              end
++            end
++          end
++          tags
++        end
++
++        def tip
++          @tip ||= get_tip
++        end
++
++        def get_tip
++          tip = nil
++          cmd = "#{HG_BIN} -R #{target('')} id -i -r tip"
++          shellout(cmd) do |io|
++            tip = io.gets.chomp
+           end
+           return nil if $? && $?.exitstatus != 0
+-          info = Info.new({:root_url => root_url.chomp,
+-                            :lastrev => revisions(nil,nil,nil,{:limit => 1}).last
+-                          })
+-          info
+-        rescue CommandFailed
+-          return nil
++          tip
+         end
+-        
+-        def entries(path=nil, identifier=nil)
++
++        def info
++          begin
++            cmd = "#{HG_BIN} -R #{target('')} root"
++            root_url = nil
++            shellout(cmd) do |io|
++              root_url = io.gets.chomp
++            end
++            return nil if $? && $?.exitstatus != 0
++            info = Info.new(
++              {
++                :root_url => root_url.chomp,
++                # :lastrev => revisions(nil,nil,nil,{:limit => 1}).last
++                :lastrev => lastrev('',nil)
++              })
++            info
++          rescue
++            nil
++          end
++        end
++
++        def lastrev(path=nil, identifier=nil)
++          lastrev = revisions(path,identifier,0,:limit => 1, :lite => true)
++          return nil if lastrev.nil? or lastrev.empty?
++          lastrev.last
++        end
++
++        def num_revisions
++          num = 0
++          cmd = "#{HG_BIN} -R #{target('')} log -r tip --template=#{shell_quote('{rev}\n')}"
++          shellout(cmd) do |io|
++            line = io.gets
++            if line.nil?
++              num = 0
++            else
++              num = line.chomp.to_i + 1
++            end
++            break
++          end
++          num
++        end
++
++        def entries(path=nil, identifier=nil, options={})
+           path ||= ''
+           entries = Entries.new
+           cmd = "#{HG_BIN} -R #{target('')} --cwd #{target('')} locate"
+@@ -89,34 +186,88 @@
+               if path.empty? or e = line.gsub!(%r{^#{with_trailling_slash(path)}},'')
+                 e ||= line
+                 e = e.chomp.split(%r{[\/\\]})
+-                entries << Entry.new({:name => e.first,
+-                                       :path => (path.nil? or path.empty? ? e.first : "#{with_trailling_slash(path)}#{e.first}"),
+-                                       :kind => (e.size > 1 ? 'dir' : 'file'),
+-                                       :lastrev => Revision.new
+-                                     }) unless e.empty? || entries.detect{|entry| entry.name == e.first}
++                unless e.empty? ||
++                     entries.detect{|entry| entry.name == e.first}
++                  kind = (e.size > 1 ? 'dir' : 'file')
++                  ent_path = (path.nil? or path.empty? ? e.first : "#{with_trailling_slash(path)}#{e.first}")
++                  lastrev = nil
++                  s = nil
++                  entries << Entry.new(
++                                    {
++                                       :name    => e.first   ,
++                                       :path    => ent_path  ,
++                                       :kind    => kind      ,
++                                       :size    => s         ,
++                                       :lastrev => lastrev
++                                     }
++                                 )
++                end
+               end
+             end
+           end
+           return nil if $? && $?.exitstatus != 0
++
++          file_cnt = 0
++          entries.each do |ent|
++            if ( ent.kind == 'file' )
++              file_cnt += 1
++            end
++          end
++          entries.each do |ent|
++                  if ( ent.kind == 'file' )
++                    if ( options[:include_file_revs] &&
++                         file_cnt < @@limit_include_file_revs )
++                      # Following process is very heavy.
++                      ent.lastrev = lastrev(ent.path,identifier)
++                      ent.size = size(ent.path,identifier) if @@has_size_ext
++                      if ( ent.size.nil? &&
++                            (identifier.to_s == default_branch ||
++                             identifier.to_s == 'tip') )
++                        full_path = info.root_url + '/' + ent.path
++                        ent.size = File.stat(full_path).size if File.file?(full_path)
++                      end
++                    else
++                      ent.lastrev = Revision.new
++                    end
++                  else
++                    # "hg log -l1 DIR" is VERY VERY HEAVY!!
++                    ent.lastrev = Revision.new
++                  end
++          end
++
+           entries.sort_by_name
+         end
+-        
++
+         # Fetch the revisions by using a template file that 
+         # makes Mercurial produce a xml output.
+-        def revisions(path=nil, identifier_from=nil, identifier_to=nil, options={})  
++        #
++        # TODO:
++        #  Mercurial version 1.2 introduced the ability to close a branch.
++        #  http://mercurial.selenic.com/wiki/PruningDeadBranches#Closing_branches
++        def revisions(path=nil, identifier_from=nil, identifier_to=nil, options={})
+           revisions = Revisions.new
+-          cmd = "#{HG_BIN} --debug --encoding utf8 -R #{target('')} log -C --style #{shell_quote self.class.template_path}"
++          cmd = "#{HG_BIN} --debug --encoding utf8 -R #{target('')} --cwd #{target('')} log"
++          if options[:lite]
++            cmd << " --style #{shell_quote self.class.lite_template_path}" 
++          else
++          	cmd << " -C --style #{shell_quote self.class.template_path}"
++          end
+           if identifier_from && identifier_to
+-            cmd << " -r #{identifier_from.to_i}:#{identifier_to.to_i}"
++            cmd << " -r #{shell_quote(identifier_from.to_s)}:#{shell_quote(identifier_to.to_s)}"
+           elsif identifier_from
+-            cmd << " -r #{identifier_from.to_i}:"
++            cmd << " -r #{shell_quote(identifier_from.to_s)}:"
++          elsif identifier_to
++            cmd << " -r :#{shell_quote(identifier_to.to_s)}"
+           end
+           cmd << " --limit #{options[:limit].to_i}" if options[:limit]
++          cmd << " --only-branch #{options[:branch]}" if options[:branch]
+           cmd << " #{path}" if path
+           shellout(cmd) do |io|
+             begin
+               # HG doesn't close the XML Document...
+-              doc = REXML::Document.new(io.read << "</log>")
++              output = io.read
++              return nil if output.empty?
++              doc = REXML::Document.new(output << "</log>")
+               doc.elements.each("log/logentry") do |logentry|
+                 paths = []
+                 copies = logentry.get_elements('paths/path-copied')
+@@ -124,7 +275,7 @@
+                   # Detect if the added file is a copy
+                   if path.attributes['action'] == 'A' and c = copies.find{ |e| e.text == path.text }
+                     from_path = c.attributes['copyfrom-path']
+-                    from_rev = logentry.attributes['revision']
++                    from_rev = logentry.attributes['shortnode']
+                   end
+                   paths << {:action => path.attributes['action'],
+                     :path => "/#{path.text}",
+@@ -132,15 +283,18 @@
+                     :from_revision => from_rev ? from_rev : nil
+                   }
+                 end
+-                paths.sort! { |x,y| x[:path] <=> y[:path] }
+-                
+-                revisions << Revision.new({:identifier => logentry.attributes['revision'],
+-                                            :scmid => logentry.attributes['node'],
+-                                            :author => (logentry.elements['author'] ? logentry.elements['author'].text : ""),
+-                                            :time => Time.parse(logentry.elements['date'].text).localtime,
+-                                            :message => logentry.elements['msg'].text,
+-                                            :paths => paths
+-                                          })
++                paths.sort! { |x,y| x[:path] <=> y[:path] } unless paths.empty?
++                revisions << Revision.new(
++                      {
++                        :identifier => logentry.attributes['shortnode'],
++                        :scmid      => logentry.attributes['node'],
++                        :author => (logentry.elements['author'] ? logentry.elements['author'].text : ""),
++                        :time => Time.parse(logentry.elements['date'].text).localtime,
++                        :message   => logentry.elements['msg'].text,
++                        :paths     => paths,
++                        :scm_order => logentry.attributes['revision'].to_i ,
++                       }
++                 )
+               end
+             rescue
+               logger.debug($!)
+@@ -149,15 +303,14 @@
+           return nil if $? && $?.exitstatus != 0
+           revisions
+         end
+-        
++
+         def diff(path, identifier_from, identifier_to=nil)
+           path ||= ''
+           if identifier_to
+-            identifier_to = identifier_to.to_i 
++            cmd = "#{HG_BIN} -R #{target('')} diff -r #{shell_quote(identifier_to.to_s)} -r #{shell_quote(identifier_from.to_s)} --nodates"
+           else
+-            identifier_to = identifier_from.to_i - 1
++            cmd = "#{HG_BIN} -R #{target('')} diff -c #{identifier_from} --nodates"
+           end
+-          cmd = "#{HG_BIN} -R #{target('')} diff -r #{identifier_to} -r #{identifier_from} --nodates"
+           cmd << " -I #{target(path)}" unless path.empty?
+           diff = []
+           shellout(cmd) do |io|
+@@ -168,11 +321,11 @@
+           return nil if $? && $?.exitstatus != 0
+           diff
+         end
+-        
++
+         def cat(path, identifier=nil)
+           cmd = "#{HG_BIN} -R #{target('')} cat"
+-          cmd << " -r " + (identifier ? identifier.to_s : "tip")
+-          cmd << " #{target(path)}"
++          cmd << " -r " + shell_quote((identifier ? identifier.to_s : "tip"))
++          cmd << " #{target(path)}" unless path.empty?
+           cat = nil
+           shellout(cmd) do |io|
+             io.binmode
+@@ -181,19 +334,38 @@
+           return nil if $? && $?.exitstatus != 0
+           cat
+         end
+-        
++
++        def size(path, identifier=nil)
++          return nil if path.nil? || ( path &&  path.empty? )
++          cmd = "#{HG_BIN} -R #{target('')} --cwd #{target('')} size"
++          cmd << " -r " + shell_quote((identifier ? identifier.to_s : "tip"))
++          cmd << " #{path}"
++          size = nil
++          shellout(cmd) do |io|
++            # size = io.read
++            size = io.gets.chomp
++          end
++          return nil if $? && $?.exitstatus != 0
++          return size.to_i
++        end
++
++        # TODO:
++        #   hg annotate behavior small changes at Ver.1.5.
++        #    http://mercurial.selenic.com/wiki/UpgradeNotes#A1.5:_Small_behavior_changes
++        #       hg annotate now follows copies and renames by default,
++        #       use --no-follow for old behavior.
+         def annotate(path, identifier=nil)
+           path ||= ''
++          identifier = 'tip' if identifier.blank?
+           cmd = "#{HG_BIN} -R #{target('')}"
+-          cmd << " annotate -n -u"
+-          cmd << " -r " + (identifier ? identifier.to_s : "tip")
+-          cmd << " -r #{identifier.to_i}" if identifier
+-          cmd << " #{target(path)}"
++          cmd << " annotate -c -u"
++          cmd << " -r #{shell_quote(identifier.to_s)}"
++          cmd << " #{target(path)}" unless path.empty?
+           blame = Annotate.new
+           shellout(cmd) do |io|
+             io.each_line do |line|
+-              next unless line =~ %r{^([^:]+)\s(\d+):(.*)$}
+-              blame.add_line($3.rstrip, Revision.new(:identifier => $2.to_i, :author => $1.strip))
++              next unless line =~ %r{^([^:]+)\s(\w+):(.*)$}
++              blame.add_line($3.rstrip, Revision.new(:identifier => $2.to_s, :author => $1.strip))
+             end
+           end
+           return nil if $? && $?.exitstatus != 0
+diff -urN redmine-0.9.3/lib/tasks/testing.rake marutosi-redmine-b34d7e8/lib/tasks/testing.rake
+--- redmine-0.9.3/lib/tasks/testing.rake	2010-02-28 11:28:08.000000000 +0100
++++ marutosi-redmine-b34d7e8/lib/tasks/testing.rake	2010-03-09 08:13:32.000000000 +0100
+@@ -26,11 +26,23 @@
+         system "svnadmin create #{repo_path}"
+         system "gunzip < test/fixtures/repositories/subversion_repository.dump.gz | svnadmin load #{repo_path}"
+       end
+-      
+-      (supported_scms - [:subversion]).each do |scm|
++
++      desc "Creates a test mercurial repository"
++      task :mercurial => :create_dir do
++        repo_path = "tmp/test/mercurial_repository"
++        system "hg init #{repo_path}"
++        system "cp -f test/fixtures/repositories/mercurial/hgrc #{repo_path}/.hg/hgrc "
++        system "hg -R #{repo_path} pull test/fixtures/repositories/mercurial/default.r0.bundle"
++        system "hg -R #{repo_path} pull test/fixtures/repositories/mercurial/default.r1-r5.bundle"
++        system "hg -R #{repo_path} pull test/fixtures/repositories/mercurial/branch00.r1.bundle"
++
++      end
++
++      (supported_scms - [:subversion, :mercurial]).each do |scm|
+         desc "Creates a test #{scm} repository"
+         task scm => :create_dir do
+-          system "gunzip < test/fixtures/repositories/#{scm}_repository.tar.gz | tar -xv -C tmp/test"
++          # system "gunzip < test/fixtures/repositories/#{scm}_repository.tar.gz | tar -xv -C tmp/test"
++          system "tar -xvz -C tmp/test -f test/fixtures/repositories/#{scm}_repository.tar.gz"
+         end
+       end
+       
+Files redmine-0.9.3/test/fixtures/repositories/mercurial/branch00.r1.bundle and marutosi-redmine-b34d7e8/test/fixtures/repositories/mercurial/branch00.r1.bundle differ
+Files redmine-0.9.3/test/fixtures/repositories/mercurial/default.r0.bundle and marutosi-redmine-b34d7e8/test/fixtures/repositories/mercurial/default.r0.bundle differ
+Files redmine-0.9.3/test/fixtures/repositories/mercurial/default.r1-r5.bundle and marutosi-redmine-b34d7e8/test/fixtures/repositories/mercurial/default.r1-r5.bundle differ
+diff -urN redmine-0.9.3/test/fixtures/repositories/mercurial/hgrc marutosi-redmine-b34d7e8/test/fixtures/repositories/mercurial/hgrc
+--- redmine-0.9.3/test/fixtures/repositories/mercurial/hgrc	1970-01-01 01:00:00.000000000 +0100
++++ marutosi-redmine-b34d7e8/test/fixtures/repositories/mercurial/hgrc	2010-03-09 08:13:32.000000000 +0100
+@@ -0,0 +1,20 @@
++
++[ui]
++username = test00 <test00@example.com>
++
++[extensions]
++# MQ extention needs for unit test of check history editing.
++hgext.mq =
++
++# share =
++# hgext.convert = 
++# hgext.graphlog = 
++# extdiff = 
++# hgext.hgk = 
++# hgext.bookmarks =
++# rebase=
++# hgext.purge=
++
++# hggit = 
++# svn = 
++
+Files redmine-0.9.3/test/fixtures/repositories/mercurial_repository.tar.gz and marutosi-redmine-b34d7e8/test/fixtures/repositories/mercurial_repository.tar.gz differ
+diff -urN redmine-0.9.3/test/functional/repositories_mercurial_controller_test.rb marutosi-redmine-b34d7e8/test/functional/repositories_mercurial_controller_test.rb
+--- redmine-0.9.3/test/functional/repositories_mercurial_controller_test.rb	2010-02-28 11:28:05.000000000 +0100
++++ marutosi-redmine-b34d7e8/test/functional/repositories_mercurial_controller_test.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -33,6 +33,14 @@
+     @response   = ActionController::TestResponse.new
+     User.current = nil
+     Repository::Mercurial.create(:project => Project.find(3), :url => REPOSITORY_PATH)
++
++    %x{hg -R #{REPOSITORY_PATH} update null}
++    %x{hg -R #{REPOSITORY_PATH} strip 0}
++    %x{hg -R #{REPOSITORY_PATH} verify}
++    %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/default.r0.bundle}
++    %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/branch00.r1.bundle}
++    %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/default.r1-r5.bundle}
++
+   end
+   
+   if File.directory?(REPOSITORY_PATH)
+@@ -92,7 +100,7 @@
+                  :attributes => { :class => /line-num/ },
+                  :sibling => { :tag => 'td', :content => /WITHOUT ANY WARRANTY/ }
+     end
+-    
++
+     def test_entry_download
+       get :entry, :id => 3, :path => ['sources', 'watchers_controller.rb'], :format => 'raw'
+       assert_response :success
+@@ -100,6 +108,8 @@
+       assert @response.body.include?('WITHOUT ANY WARRANTY')
+     end
+ 
++    # This shows "default branch".
++    # git shows "master", but Mercurial shows "tip".
+     def test_directory_entry
+       get :entry, :id => 3, :path => ['sources']
+       assert_response :success
+@@ -107,10 +117,22 @@
+       assert_not_nil assigns(:entry)
+       assert_equal 'sources', assigns(:entry).name
+     end
+-    
++
++    def test_browse_branch
++      get :show, :id => 3, :rev => 'branch00'
++      assert_response :success
++      assert_template 'show'
++      assert_not_nil assigns(:entries)
++      assert_equal 4, assigns(:entries).size
++      assert assigns(:entries).detect {|e| e.name == 'branch00-dir' && e.kind == 'dir'}
++      assert assigns(:entries).detect {|e| e.name == 'images' && e.kind == 'dir'}
++      assert assigns(:entries).detect {|e| e.name == 'sources' && e.kind == 'dir'}
++      assert assigns(:entries).detect {|e| e.name == 'README' && e.kind == 'file'}
++    end
++
+     def test_diff
+       # Full diff of changeset 4
+-      get :diff, :id => 3, :rev => 4
++      get :diff, :id => 3, :rev => 'def6d2f1254a'
+       assert_response :success
+       assert_template 'diff'
+       # Line 22 removed
+@@ -120,7 +142,7 @@
+                                :attributes => { :class => /diff_out/ },
+                                :content => /def remove/ }
+     end
+-    
++
+     def test_annotate
+       get :annotate, :id => 3, :path => ['sources', 'watchers_controller.rb']
+       assert_response :success
+@@ -131,6 +153,7 @@
+                  :sibling => { :tag => 'td', :content => /jsmith/ },
+                  :sibling => { :tag => 'td', :content => /watcher =/ }
+     end
++
+   else
+     puts "Mercurial test repository NOT FOUND. Skipping functional tests !!!"
+     def test_fake; assert true end
+diff -urN redmine-0.9.3/test/unit/repository_mercurial_test.rb marutosi-redmine-b34d7e8/test/unit/repository_mercurial_test.rb
+--- redmine-0.9.3/test/unit/repository_mercurial_test.rb	2010-02-28 11:28:05.000000000 +0100
++++ marutosi-redmine-b34d7e8/test/unit/repository_mercurial_test.rb	2010-03-09 08:13:32.000000000 +0100
+@@ -26,48 +26,87 @@
+   def setup
+     @project = Project.find(1)
+     assert @repository = Repository::Mercurial.create(:project => @project, :url => REPOSITORY_PATH)
++
++    %x{hg -R #{REPOSITORY_PATH} update null}
++    %x{hg -R #{REPOSITORY_PATH} strip 0}
++    %x{hg -R #{REPOSITORY_PATH} verify}
++
++    %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/default.r0.bundle}
++    %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/branch00.r1.bundle}
++    %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/default.r1-r5.bundle}
+   end
+-  
+-  if File.directory?(REPOSITORY_PATH)  
++
++  if File.directory?(REPOSITORY_PATH)
++
+     def test_fetch_changesets_from_scratch
+       @repository.fetch_changesets
+       @repository.reload
+-      
+-      assert_equal 6, @repository.changesets.count
+-      assert_equal 11, @repository.changes.count
+-      assert_equal "Initial import.\nThe repository contains 3 files.", @repository.changesets.find_by_revision('0').comments
++
++      assert_equal 7, @repository.changesets.count
++      assert_equal 12, @repository.changes.count
++      assert_equal "Initial import.\nThe repository contains 3 files.", @repository.changesets.find_by_revision('0885933ad4f6').comments
+     end
+     
+     def test_fetch_changesets_incremental
+       @repository.fetch_changesets
+-      # Remove changesets with revision > 2
+-      @repository.changesets.find(:all).each {|c| c.destroy if c.revision.to_i > 2}
++      ## Mercurial can set commit date,
++      # @repository.changesets.find(:all, :order => 'committed_on DESC', :limit => 3).each(&:destroy)
++      @repository.changesets.find(:all, :order => 'scm_order DESC', :limit => 3).each(&:destroy)
++
+       @repository.reload
+-      assert_equal 3, @repository.changesets.count
+-      
++      assert_equal 4, @repository.changesets.count
++
+       @repository.fetch_changesets
+-      assert_equal 6, @repository.changesets.count
++      assert_equal 7, @repository.changesets.count
+     end
+     
+     def test_entries
+-      assert_equal 2, @repository.entries("sources", 2).size
+-      assert_equal 1, @repository.entries("sources", 3).size
++      %x{hg -R #{REPOSITORY_PATH} up null}
++      assert_equal 2, @repository.entries("sources", '400bb8672109').size
++      assert_equal 1, @repository.entries("sources", 'b3a615152df8').size
+     end
+ 
+     def test_locate_on_outdated_repository
+       # Change the working dir state
+-      %x{hg -R #{REPOSITORY_PATH} up -r 0}
+-      assert_equal 1, @repository.entries("images", 0).size
++      %x{hg -R #{REPOSITORY_PATH} up null}
++      assert_equal 1, @repository.entries("images", '0885933ad4f6').size
+       assert_equal 2, @repository.entries("images").size
+-      assert_equal 2, @repository.entries("images", 2).size
++      assert_equal 2, @repository.entries("images", '400bb8672109').size
+     end
+ 
+ 
+     def test_cat
+-      assert @repository.scm.cat("sources/welcome_controller.rb", 2)
++      assert @repository.scm.cat("sources/welcome_controller.rb", '400bb8672109')
+       assert_nil @repository.scm.cat("sources/welcome_controller.rb")
+     end
+ 
++    def test_simple_strip
++      %x{hg -R #{REPOSITORY_PATH} up null}
++      %x{hg -R #{REPOSITORY_PATH} strip def6d2f1254a}
++      @repository.fetch_changesets
++      @repository.reload
++      assert_equal 5, @repository.changesets.count
++
++      %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/default.r1-r5.bundle}
++      @repository.fetch_changesets
++      @repository.reload
++      assert_equal 7, @repository.changesets.count
++    end
++
++    def test_middle_rev_strip
++        %x{hg -R #{REPOSITORY_PATH} up null}
++        %x{hg -R #{REPOSITORY_PATH} strip 96aec45e5255}
++        @repository.fetch_changesets
++        @repository.reload
++        assert_equal 6, @repository.changesets.count
++        %x{hg -R #{REPOSITORY_PATH} pull test/fixtures/repositories/mercurial/branch00.r1.bundle}
++        @repository.fetch_changesets
++        @repository.reload
++        assert_equal 7, @repository.changesets.count
++
++
++    end
++
+   else
+     puts "Mercurial test repository NOT FOUND. Skipping unit tests !!!"
+     def test_fake; assert true end
