@@ -6,7 +6,7 @@
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	0.9.3
-Release:	2
+Release:	3
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/69449/%{name}-%{version}.tar.gz
@@ -25,6 +25,7 @@ Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
 Patch5:		%{name}-csv-utf.patch
 Patch6:		%{name}-rfpdf.patch
+Patch7:		%{name}-mercurial.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	rpmbuild(macros) >= 1.202
@@ -127,6 +128,7 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
+%patch7 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \
