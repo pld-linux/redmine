@@ -53,8 +53,8 @@ Suggests:	ruby-mocha
 Suggests:	ruby-mysql-library
 Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
-# Does not work AT ALL with rails 3 currently
 Provides:	user(redmine)
+# Does not work AT ALL with rails 3 currently
 Conflicts:	ruby-rails >= 3.0
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
