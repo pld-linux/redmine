@@ -29,6 +29,8 @@ Patch7:		%{name}-mercurial.patch
 Patch8:		%{name}-gantt.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
+BuildRequires:	perl-base
+BuildRequires:	rpm-perlprov
 BuildRequires:	rpmbuild(macros) >= 1.202
 BuildRequires:	ruby-rake >= 0.8.3
 Requires(postun):	/usr/sbin/userdel
@@ -46,14 +48,14 @@ Requires:	webserver(alias)
 Suggests:	cvs
 Suggests:	git-core
 Suggests:	mercurial
+Suggests:	ruby-ldap
 Suggests:	ruby-mocha
 Suggests:	ruby-mysql-library
-Suggests:	ruby-ldap
 Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
 # Does not work AT ALL with rails 3 currently
-Conflicts:	ruby-rails >= 3.0
 Provides:	user(redmine)
+Conflicts:	ruby-rails >= 3.0
 BuildArch:	noarch
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -89,8 +91,8 @@ Summary:	Forward emails from email server to redmine
 Group:		Applications/WWW
 
 %description mailhandler
-Reads an email from standard input and forward it to a Redmine
-server through a HTTP request.
+Reads an email from standard input and forward it to a Redmine server
+through a HTTP request.
 
 %package reposman
 Summary:	SCM repository manager for redmine
@@ -254,13 +256,13 @@ fi
 %files reposman
 %defattr(644,root,root,755)
 %doc extra/svn/create_views.sql
-%{_bindir}/reposman.rb
-%{_bindir}/svnserve.wrapper
+%attr(755,root,root) %{_bindir}/reposman.rb
+%attr(755,root,root) %{_bindir}/svnserve.wrapper
 %{perl_vendorlib}/Apache/Redmine.pm
 
 %files mailhandler
 %defattr(644,root,root,755)
-%{_bindir}/rdm-mailhandler.rb
+%attr(755,root,root) %{_bindir}/rdm-mailhandler.rb
 
 %files testsuite
 %defattr(644,root,root,755)
