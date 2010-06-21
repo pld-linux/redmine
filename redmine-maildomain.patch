@@ -56,60 +56,58 @@ diff -ur redmine-0.9.3-mdomain/app/views/auth_sources/_form.rhtml /usr/share/red
 diff -ur redmine-0.9.3-mdomain/config/locales/bg.yml /usr/share/redmine//config/locales/bg.yml
 --- redmine-0.9.3-mdomain/config/locales/bg.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/bg.yml	2010-03-09 16:07:57.704124071 +0100
-@@ -881,4 +881,4 @@
-   permission_export_wiki_pages: Export wiki pages
+@@ -881,3 +881,4 @@
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
--  
-\ No newline at end of file
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/bs.yml /usr/share/redmine//config/locales/bs.yml
 --- redmine-0.9.3-mdomain/config/locales/bs.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/bs.yml	2010-03-09 16:02:07.471128387 +0100
 @@ -905,3 +905,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/ca.yml /usr/share/redmine//config/locales/ca.yml
 --- redmine-0.9.3-mdomain/config/locales/ca.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/ca.yml	2010-03-09 16:02:07.476311454 +0100
 @@ -884,3 +884,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/cs.yml /usr/share/redmine//config/locales/cs.yml
 --- redmine-0.9.3-mdomain/config/locales/cs.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/cs.yml	2010-03-09 16:02:07.481310910 +0100
 @@ -887,3 +887,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/da.yml /usr/share/redmine//config/locales/da.yml
 --- redmine-0.9.3-mdomain/config/locales/da.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/da.yml	2010-03-09 16:02:07.486310868 +0100
 @@ -907,3 +907,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/de.yml /usr/share/redmine//config/locales/de.yml
 --- redmine-0.9.3-mdomain/config/locales/de.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/de.yml	2010-03-09 16:02:07.491160025 +0100
 @@ -907,3 +907,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/el.yml /usr/share/redmine//config/locales/el.yml
 --- redmine-0.9.3-mdomain/config/locales/el.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/el.yml	2010-03-09 16:02:07.496310820 +0100
 @@ -887,3 +887,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/en.yml /usr/share/redmine//config/locales/en.yml
 --- redmine-0.9.3-mdomain/config/locales/en.yml	2010-03-09 16:10:27.000000000 +0100
@@ -126,17 +124,17 @@ diff -ur redmine-0.9.3-mdomain/config/locales/es.yml /usr/share/redmine//config/
 --- redmine-0.9.3-mdomain/config/locales/es.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/es.yml	2010-03-09 16:02:07.514310788 +0100
 @@ -931,3 +931,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/fi.yml /usr/share/redmine//config/locales/fi.yml
 --- redmine-0.9.3-mdomain/config/locales/fi.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/fi.yml	2010-03-09 16:02:07.519310791 +0100
 @@ -917,3 +917,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/fr.yml /usr/share/redmine//config/locales/fr.yml
 --- redmine-0.9.3-mdomain/config/locales/fr.yml	2010-03-09 16:10:27.000000000 +0100
@@ -150,213 +148,209 @@ diff -ur redmine-0.9.3-mdomain/config/locales/gl.yml /usr/share/redmine//config/
 --- redmine-0.9.3-mdomain/config/locales/gl.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/gl.yml	2010-03-09 16:02:07.529310634 +0100
 @@ -907,3 +907,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/he.yml /usr/share/redmine//config/locales/he.yml
 --- redmine-0.9.3-mdomain/config/locales/he.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/he.yml	2010-03-09 16:02:07.534311163 +0100
 @@ -891,3 +891,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/hr.yml /usr/share/redmine//config/locales/hr.yml
 --- redmine-0.9.3-mdomain/config/locales/hr.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/hr.yml	2010-03-09 16:02:07.539310860 +0100
 @@ -894,3 +894,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/hu.yml /usr/share/redmine//config/locales/hu.yml
 --- redmine-0.9.3-mdomain/config/locales/hu.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/hu.yml	2010-03-09 16:02:07.557311363 +0100
 @@ -912,3 +912,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/id.yml /usr/share/redmine//config/locales/id.yml
 --- redmine-0.9.3-mdomain/config/locales/id.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/id.yml	2010-03-09 16:02:07.562253468 +0100
 @@ -899,3 +899,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/it.yml /usr/share/redmine//config/locales/it.yml
 --- redmine-0.9.3-mdomain/config/locales/it.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/it.yml	2010-03-09 16:07:57.709123710 +0100
-@@ -894,4 +894,4 @@
-   permission_export_wiki_pages: Export wiki pages
+@@ -894,3 +894,4 @@
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
-- 
-\ No newline at end of file
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/ja.yml /usr/share/redmine//config/locales/ja.yml
 --- redmine-0.9.3-mdomain/config/locales/ja.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/ja.yml	2010-03-09 16:02:07.572128759 +0100
 @@ -916,3 +916,4 @@
-   enumeration_activities: 作業分類 (時間トラッキング)
    enumeration_system_activity: システム作業分類
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/ko.yml /usr/share/redmine//config/locales/ko.yml
 --- redmine-0.9.3-mdomain/config/locales/ko.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/ko.yml	2010-03-09 16:02:07.578311147 +0100
 @@ -947,3 +947,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/lt.yml /usr/share/redmine//config/locales/lt.yml
 --- redmine-0.9.3-mdomain/config/locales/lt.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/lt.yml	2010-03-09 16:02:07.583311844 +0100
 @@ -955,3 +955,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/nl.yml /usr/share/redmine//config/locales/nl.yml
 --- redmine-0.9.3-mdomain/config/locales/nl.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/nl.yml	2010-03-09 16:02:07.601311031 +0100
 @@ -869,3 +869,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/no.yml /usr/share/redmine//config/locales/no.yml
 --- redmine-0.9.3-mdomain/config/locales/no.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/no.yml	2010-03-09 16:02:07.606310974 +0100
 @@ -882,3 +882,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/pl.yml /usr/share/redmine//config/locales/pl.yml
 --- redmine-0.9.3-mdomain/config/locales/pl.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/pl.yml	2010-03-09 16:02:07.611310884 +0100
 @@ -912,3 +912,4 @@
-   permission_export_wiki_pages: Eksport stron wiki
    permission_manage_project_activities: Zarządzanie aktywnościami projektu
    setting_cache_formatted_text: Cache formatted text
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/pt-BR.yml /usr/share/redmine//config/locales/pt-BR.yml
 --- redmine-0.9.3-mdomain/config/locales/pt-BR.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/pt-BR.yml	2010-03-09 16:02:07.616310857 +0100
 @@ -915,3 +915,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/pt.yml /usr/share/redmine//config/locales/pt.yml
 --- redmine-0.9.3-mdomain/config/locales/pt.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/pt.yml	2010-03-09 16:02:07.621129112 +0100
 @@ -899,3 +899,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/ro.yml /usr/share/redmine//config/locales/ro.yml
 --- redmine-0.9.3-mdomain/config/locales/ro.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/ro.yml	2010-03-09 16:02:07.626310893 +0100
 @@ -884,3 +884,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/ru.yml /usr/share/redmine//config/locales/ru.yml
 --- redmine-0.9.3-mdomain/config/locales/ru.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/ru.yml	2010-03-09 16:02:07.645310934 +0100
 @@ -995,3 +995,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/sk.yml /usr/share/redmine//config/locales/sk.yml
 --- redmine-0.9.3-mdomain/config/locales/sk.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/sk.yml	2010-03-09 16:02:07.650310925 +0100
 @@ -886,3 +886,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/sl.yml /usr/share/redmine//config/locales/sl.yml
 --- redmine-0.9.3-mdomain/config/locales/sl.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/sl.yml	2010-03-09 16:02:07.655310814 +0100
 @@ -883,3 +883,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/sr.yml /usr/share/redmine//config/locales/sr.yml
 --- redmine-0.9.3-mdomain/config/locales/sr.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/sr.yml	2010-03-09 16:02:07.660310846 +0100
 @@ -902,3 +902,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/sv.yml /usr/share/redmine//config/locales/sv.yml
 --- redmine-0.9.3-mdomain/config/locales/sv.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/sv.yml	2010-03-09 16:02:07.665310949 +0100
 @@ -936,3 +936,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/th.yml /usr/share/redmine//config/locales/th.yml
 --- redmine-0.9.3-mdomain/config/locales/th.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/th.yml	2010-03-09 16:02:07.670310948 +0100
 @@ -884,3 +884,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/tr.yml /usr/share/redmine//config/locales/tr.yml
 --- redmine-0.9.3-mdomain/config/locales/tr.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/tr.yml	2010-03-09 16:02:07.689129224 +0100
 @@ -914,3 +914,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/uk.yml /usr/share/redmine//config/locales/uk.yml
 --- redmine-0.9.3-mdomain/config/locales/uk.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/uk.yml	2010-03-09 16:02:07.694310993 +0100
 @@ -883,3 +883,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/vi.yml /usr/share/redmine//config/locales/vi.yml
 --- redmine-0.9.3-mdomain/config/locales/vi.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/vi.yml	2010-03-09 16:02:07.699310881 +0100
 @@ -946,3 +946,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/zh-TW.yml /usr/share/redmine//config/locales/zh-TW.yml
 --- redmine-0.9.3-mdomain/config/locales/zh-TW.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/zh-TW.yml	2010-03-09 16:02:07.704242744 +0100
 @@ -978,3 +978,4 @@
-   permission_export_wiki_pages: Export wiki pages
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/config/locales/zh.yml /usr/share/redmine//config/locales/zh.yml
 --- redmine-0.9.3-mdomain/config/locales/zh.yml	2010-03-09 16:10:27.000000000 +0100
 +++ /usr/share/redmine//config/locales/zh.yml	2010-03-09 16:07:57.727123459 +0100
-@@ -909,4 +909,4 @@
-   permission_export_wiki_pages: Export wiki pages
+@@ -909,3 +909,4 @@
    setting_cache_formatted_text: Cache formatted text
    permission_manage_project_activities: Manage project activities
-- 
-\ No newline at end of file
+   label_project_copy_notifications: Send email notifications during the project copy
 +  field_maildomain: Email domain
 diff -ur redmine-0.9.3-mdomain/db/migrate/001_setup.rb /usr/share/redmine//db/migrate/001_setup.rb
 --- redmine-0.9.3-mdomain/db/migrate/001_setup.rb	2010-03-09 16:10:27.000000000 +0100

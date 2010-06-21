@@ -4,12 +4,12 @@ diff -ur redmine-0.9.3/app/controllers/issues_controller.rb redmine-0.9.3-utf/ap
 @@ -224,7 +224,7 @@
        text = @issue.description
      end
-     content = "#{ll(Setting.default_language, :text_user_wrote, user)}\\n> "
--    content << text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
-+    content << text.to_s.strip.gsub(%r{<pre>((.|[[:space:]])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
-     render(:update) { |page|
-       page.<< "$('notes').value = \"#{content}\";"
-       page.show 'update'
+     # Replaces pre blocks with [...]
+-    text = text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]')
++    text = text.to_s.strip.gsub(%r{<pre>((.|[[:space:]])*?)</pre>}m, '[...]')
+     content = "#{ll(Setting.default_language, :text_user_wrote, user)}\n> "
+     content << text.gsub(/(\r?\n|\r\n?)/, "\n> ") + "\n\n"
+       
 diff -ur redmine-0.9.3/app/controllers/messages_controller.rb redmine-0.9.3-utf/app/controllers/messages_controller.rb
 --- redmine-0.9.3/app/controllers/messages_controller.rb	2010-03-08 17:22:10.072186592 +0100
 +++ redmine-0.9.3-utf/app/controllers/messages_controller.rb	2010-03-08 17:28:07.687124040 +0100
