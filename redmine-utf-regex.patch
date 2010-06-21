@@ -6,7 +6,7 @@ diff -ur redmine-0.9.3/app/controllers/issues_controller.rb redmine-0.9.3-utf/ap
      end
      content = "#{ll(Setting.default_language, :text_user_wrote, user)}\\n> "
 -    content << text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
-+    content << text.to_s.strip.gsub(%r{<pre>((.|[:space:])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
++    content << text.to_s.strip.gsub(%r{<pre>((.|[[:space:]])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
      render(:update) { |page|
        page.<< "$('notes').value = \"#{content}\";"
        page.show 'update'
@@ -18,7 +18,7 @@ diff -ur redmine-0.9.3/app/controllers/messages_controller.rb redmine-0.9.3-utf/
      subject = "RE: #{subject}" unless subject.starts_with?('RE:')
      content = "#{ll(Setting.default_language, :text_user_wrote, user)}\\n> "
 -    content << text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
-+    content << text.to_s.strip.gsub(%r{<pre>((.|[:space:])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
++    content << text.to_s.strip.gsub(%r{<pre>((.|[[:space:]])*?)</pre>}m, '[...]').gsub('"', '\"').gsub(/(\r?\n|\r\n?)/, "\\n> ") + "\\n\\n"
      render(:update) { |page|
        page << "$('reply_subject').value = \"#{subject}\";"
        page.<< "$('message_content').value = \"#{content}\";"
@@ -30,7 +30,7 @@ diff -ur redmine-0.9.3/app/controllers/search_controller.rb redmine-0.9.3-utf/ap
      # extract tokens from the question
      # eg. hello "bye bye" => ["hello", "bye bye"]
 -    @tokens = @question.scan(%r{((\s|^)"[\s\w]+"(\s|$)|\S+)}).collect {|m| m.first.gsub(%r{(^\s*"\s*|\s*"\s*$)}, '')}
-+    @tokens = @question.scan(%r{(([:space:]|^)"[[:space:][:word:]]+"([:space:]|$)|[:space:]+)}).collect {|m| m.first.gsub(%r{(^[:space:]*"[:space:]*|[:space:]*"[:space:]*$)}, '')}
++    @tokens = @question.scan(%r{(([[:space:]]|^)"[[:space:][:word:]]+"([[:space:]]|$)|[[:space:]]+)}).collect {|m| m.first.gsub(%r{(^[[:space:]]*"[[:space:]]*|[[:space:]]*"[[:space:]]*$)}, '')}
      # tokens must be at least 2 characters long
      @tokens = @tokens.uniq.select {|w| w.length > 1 }
      
@@ -42,7 +42,7 @@ diff -ur redmine-0.9.3/app/models/changeset.rb redmine-0.9.3-utf/app/models/chan
        # find any issue ID in the comments
        target_issue_ids = []
 -      comments.scan(%r{([\s\(\[,-]|^)#(\d+)(?=[[:punct:]]|\s|<|$)}).each { |m| target_issue_ids << m[1] }
-+      comments.scan(%r{([[:space:]\(\[,-]|^)#(\d+)(?=[[:punct:]]|[:space:]|<|$)}).each { |m| target_issue_ids << m[1] }
++      comments.scan(%r{([[:space:]\(\[,-]|^)#(\d+)(?=[[:punct:]]|[[:space:]]|<|$)}).each { |m| target_issue_ids << m[1] }
        referenced_issues += find_referenced_issues_by_id(target_issue_ids)
      end
      
@@ -143,10 +143,10 @@ diff -ur redmine-0.9.3/app/models/wiki_page.rb redmine-0.9.3-utf/app/models/wiki
      @content_to = content_to
      @content_from = content_from
 -    @words = content_to.text.split(/(\s+)/)
-+    @words = content_to.text.split(/([:space:]+)/)
++    @words = content_to.text.split(/([[:space:]]+)/)
      @words = @words.select {|word| word != ' '}
 -    words_from = content_from.text.split(/(\s+)/)
-+    words_from = content_from.text.split(/([:space:]+)/)
++    words_from = content_from.text.split(/([[:space:]]+)/)
      words_from = words_from.select {|word| word != ' '}    
      @diff = words_from.diff @words
    end
