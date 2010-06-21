@@ -158,7 +158,7 @@ diff -ur redmine-0.9.3/app/models/wiki.rb redmine-0.9.3-utf/app/models/wiki.rb
    def self.titleize(title)
      # replace spaces with _ and remove unwanted caracters
 -    title = title.gsub(/\s+/, '_').delete(',./?;|:') if title
-+    title = title.gsub(/[:space:]+/, '_').delete(',./?;|:') if title
++    title = title.gsub(/[[:space:]]+/, '_').delete(',./?;|:') if title
      # upcase the first letter
      title = (title.slice(0..0).upcase + (title.slice(1..-1) || '')) if title
      title
