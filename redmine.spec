@@ -5,12 +5,12 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
-Version:	0.9.6
-Release:	1
+Version:	1.0.4
+Release:	0.1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://rubyforge.org/frs/download.php/71530/%{name}-%{version}.tar.gz
-# Source0-md5:	550015d3c5a6158dfe4b656640807513
+Source0:	http://rubyforge.org/frs/download.php/73457/%{name}-%{version}.tar.gz
+# Source0-md5:	a30a5fc39b1a07dfe6751666417d6538
 Source1:	%{name}-rfpdf.tar.bz2
 # Source1-md5:	83da153b550237f47a3a3c1c2acaac20
 Source2:	%{name}.conf
@@ -19,7 +19,6 @@ Source3:	%{name}-fix_params.rb
 Source4:	%{name}-fix_renderable.rb
 Source5:	%{name}-fix_utf.rb
 Patch0:		%{name}-pld.patch
-Patch1:		%{name}-ldap.patch
 Patch2:		%{name}-utf-regex.patch
 Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
@@ -49,7 +48,7 @@ Requires:	webserver(alias)
 Suggests:	cvs
 Suggests:	git-core
 Suggests:	mercurial
-Suggests:	ruby-ldap
+Suggests:	ruby-net-ldap
 Suggests:	ruby-mocha
 Suggests:	ruby-mysql-library
 Suggests:	ruby-openid >= 2.1.4
@@ -126,7 +125,6 @@ rm -r vendor/plugins/rfpdf
 find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
-%patch1 -p1
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1

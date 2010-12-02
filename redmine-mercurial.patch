@@ -35,7 +35,7 @@ diff -urN redmine-0.9.3/app/helpers/repositories_helper.rb marutosi-redmine-b34d
 diff -urN redmine-0.9.3/app/models/repository/mercurial.rb marutosi-redmine-b34d7e8/app/models/repository/mercurial.rb
 --- redmine-0.9.3/app/models/repository/mercurial.rb	2010-02-28 11:28:05.000000000 +0100
 +++ marutosi-redmine-b34d7e8/app/models/repository/mercurial.rb	2010-03-09 08:13:32.000000000 +0100
-@@ -18,77 +18,309 @@
+@@ -18,73 +18,309 @@
  require 'redmine/scm/adapters/mercurial_adapter'
  
  class Repository::Mercurial < Repository
@@ -143,11 +143,7 @@ diff -urN redmine-0.9.3/app/models/repository/mercurial.rb marutosi-redmine-b34d
 -                                           :comments => revision.message)
 -              
 -              revision.paths.each do |change|
--                Change.create(:changeset => changeset,
--                              :action => change[:action],
--                              :path => change[:path],
--                              :from_path => change[:from_path],
--                              :from_revision => change[:from_revision])
+-                changeset.create_change(change)
 +    # Backout Redmine 0.9.x
 +    # return unless scm_info or scm_info.lastrev.nil?
 +    return unless scm_info
@@ -468,11 +464,10 @@ diff -urN redmine-0.9.3/db/migrate/20100222000000_add_scm_order_to_changesets.rb
 diff -urN redmine-0.9.3/.gitignore marutosi-redmine-b34d7e8/.gitignore
 --- redmine-0.9.3/.gitignore	2010-02-28 11:28:09.000000000 +0100
 +++ marutosi-redmine-b34d7e8/.gitignore	2010-03-09 08:13:32.000000000 +0100
-@@ -17,3 +17,7 @@
- /tmp/sockets/*
+@@ -17,3 +17,6 @@
  /tmp/test/*
  /vendor/rails
-+
+ *.rbc
 +/.hg/
 +/.hgignore
 +/.hgtags
@@ -611,13 +606,13 @@ diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial_adapter.rb marutosi-r
              # release number (eg 0.9.5 or 1.0) or as a revision
              # id composed of 12 hexa characters.
 @@ -42,41 +48,132 @@
-               theversion.split(".").collect(&:to_i)
+               m[2].scan(%r{\d+}).collect(&:to_i)
              end
            end
 -          
 +
            def hgversion_from_command_line
-             %x{#{HG_BIN} --version}.match(/\(version (.*)\)/)[1]
+             shellout("#{HG_BIN} --version") { |io| io.read }.to_s
            end
 -          
 +
@@ -683,7 +678,7 @@ diff -urN redmine-0.9.3/lib/redmine/scm/adapters/mercurial_adapter.rb marutosi-r
 +          tags = []
 +          cmd = "#{HG_BIN} -R #{target('')} tags -v"
            shellout(cmd) do |io|
--            root_url = io.gets
+-            root_url = io.read
 +            io.each_line do |line|
 +              strs = line.chomp.match('^([^:]+[^\s]+)[\s]+[\d]+:(.*)$')
 +              if strs[2] !~ /[\s]+local/

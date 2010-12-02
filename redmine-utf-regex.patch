@@ -1,15 +1,3 @@
-diff -ur redmine-0.9.3/app/controllers/issues_controller.rb redmine-0.9.3-utf/app/controllers/issues_controller.rb
---- redmine-0.9.3/app/controllers/issues_controller.rb	2010-03-08 17:22:10.078182839 +0100
-+++ redmine-0.9.3-utf/app/controllers/issues_controller.rb	2010-03-08 17:28:18.657123999 +0100
-@@ -224,7 +224,7 @@
-       text = @issue.description
-     end
-     # Replaces pre blocks with [...]
--    text = text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]')
-+    text = text.to_s.strip.gsub(%r{<pre>((.|[[:space:]])*?)</pre>}m, '[...]')
-     content = "#{ll(Setting.default_language, :text_user_wrote, user)}\n> "
-     content << text.gsub(/(\r?\n|\r\n?)/, "\n> ") + "\n\n"
-       
 diff -ur redmine-0.9.3/app/controllers/messages_controller.rb redmine-0.9.3-utf/app/controllers/messages_controller.rb
 --- redmine-0.9.3/app/controllers/messages_controller.rb	2010-03-08 17:22:10.072186592 +0100
 +++ redmine-0.9.3-utf/app/controllers/messages_controller.rb	2010-03-08 17:28:07.687124040 +0100
@@ -60,7 +48,7 @@ diff -ur redmine-0.9.3/app/models/custom_field.rb redmine-0.9.3-utf/app/models/c
    validates_length_of :name, :maximum => 30
 -  validates_format_of :name, :with => /^[\w\s\.\'\-]*$/i
 +  validates_format_of :name, :with => /^[[:word:][:space:]\.\'\-]*$/i
-   validates_inclusion_of :field_format, :in => FIELD_FORMATS.keys
+   validates_inclusion_of :field_format, :in => Redmine::CustomFieldFormat.available_formats
  
    def initialize(attributes = nil)
 diff -ur redmine-0.9.3/app/models/issue_status.rb redmine-0.9.3-utf/app/models/issue_status.rb

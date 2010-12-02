@@ -30,18 +30,17 @@ diff -ur redmine-0.9.3/config/environment.rb redmine-0.9.3-fixes/config/environm
 diff -ur redmine/config/environments/production.rb redmine-0.9.3//config/environments/production.rb
 --- redmine/config/environments/production.rb	2010-03-09 17:47:15.000000000 +0100
 +++ redmine-0.9.3//config/environments/production.rb	2010-03-07 14:37:34.000000000 +0100
-@@ -5,8 +5,9 @@
- config.cache_classes = true
- 
+@@ -5,7 +5,9 @@
+ # Customize the default logger (http://ruby-doc.org/core/classes/Logger.html)
+ #
  # Use a different logger for distributed setups
 -# config.logger        = SyslogLogger.new
--
 +require 'syslog_logger'
 +config.logger    = SyslogLogger.new("redmine")
 +config.logger.level = Logger::INFO
- 
- # Full error reports are disabled and caching is turned on
- config.action_controller.consider_all_requests_local = false
+ #
+ # Rotate logs bigger than 1MB, keeps no more than 7 rotated logs around.
+ # When setting a new Logger, make sure to set it's log level too.
 diff -ur redmine-0.9.3/lib/redmine/menu_manager.rb redmine-0.9.3-fixes/lib/redmine/menu_manager.rb
 --- redmine-0.9.3/lib/redmine/menu_manager.rb	2010-02-28 11:28:08.000000000 +0100
 +++ redmine-0.9.3-fixes/lib/redmine/menu_manager.rb	2010-03-06 13:05:22.000000000 +0100

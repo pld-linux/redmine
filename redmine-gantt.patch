@@ -1,5 +1,5 @@
---- redmine/app/views/issues/gantt.rhtml~	2010-03-13 18:47:18.559124715 +0100
-+++ redmine/app/views/issues/gantt.rhtml	2010-03-13 18:47:21.031124401 +0100
+--- redmine/app/views/gantts/show.html.erb~	2010-03-13 18:47:18.559124715 +0100
++++ redmine/app/views/gantts/show.html.erb	2010-03-13 18:47:21.031124401 +0100
 @@ -62,7 +62,7 @@
      end
  end
