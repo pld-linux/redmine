@@ -5,12 +5,12 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
-Version:	0.9.4
+Version:	0.9.6
 Release:	1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://rubyforge.org/frs/download.php/70486/%{name}-%{version}.tar.gz
-# Source0-md5:	43c2ab81ad086cc78802b0f3670e5f07
+Source0:	http://rubyforge.org/frs/download.php/71530/%{name}-%{version}.tar.gz
+# Source0-md5:	550015d3c5a6158dfe4b656640807513
 Source1:	%{name}-rfpdf.tar.bz2
 # Source1-md5:	83da153b550237f47a3a3c1c2acaac20
 Source2:	%{name}.conf
@@ -27,6 +27,7 @@ Patch5:		%{name}-csv-utf.patch
 Patch6:		%{name}-rfpdf.patch
 Patch7:		%{name}-mercurial.patch
 Patch8:		%{name}-gantt.patch
+Patch9:		%{name}-git-parse.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	perl-base
@@ -133,6 +134,7 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \

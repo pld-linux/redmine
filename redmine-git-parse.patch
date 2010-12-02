@@ -1,0 +1,10 @@
+--- redmine-0.9.4/lib/redmine/scm/adapters/git_adapter.rb~	2010-12-02 12:25:36.877495204 +0100
++++ redmine-0.9.4/lib/redmine/scm/adapters/git_adapter.rb	2010-12-02 12:29:36.839495202 +0100
+@@ -130,6 +130,7 @@
+             revno = 1
+ 
+             io.each_line do |line|
++              line.force_encoding(Encoding::ASCII_8BIT) if line.respond_to?(:force_encoding)
+               if line =~ /^commit ([0-9a-f]{40})$/
+                 key = "commit"
+                 value = $1
