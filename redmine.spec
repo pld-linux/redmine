@@ -6,7 +6,7 @@
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	1.0.4
-Release:	0.1
+Release:	0.2
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/73457/%{name}-%{version}.tar.gz
@@ -194,7 +194,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 %banner -e %{name} <<-EOF
-You may need to update redmine database, to do this run:
+You may need to update redmine database, to do this run
+(assuming 'production' is the name of redmine rails environment):
 cd %{_datadir}/%{name}
 rake db:migrate RAILS_ENV=production 
 EOF
