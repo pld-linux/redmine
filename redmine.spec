@@ -199,6 +199,7 @@ fi
 
 %triggerin -- apache < 2.2.0, apache-base
 %webapp_register httpd %{_webapp}
+%addusertogroup -q redmine http
 
 %triggerun -- apache < 2.2.0, apache-base
 %webapp_unregister httpd %{_webapp}
