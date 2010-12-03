@@ -192,6 +192,13 @@ rm -rf $RPM_BUILD_ROOT
 %pre
 %useradd -u 212 -d %{_datadir}/%{name} -s /bin/false -c "Redmine User" -g nobody redmine
 
+%post
+%banner -e %{name} <<-EOF
+You may need to update redmine database, to do this run:
+cd %{_datadir}/%{name}
+rake db:migrate RAILS_ENV=production 
+EOF
+
 %postun
 if [ "$1" = "0" ]; then
 	%userremove redmine
