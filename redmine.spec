@@ -19,6 +19,7 @@ Source3:	%{name}-fix_params.rb
 Source4:	%{name}-fix_renderable.rb
 Source5:	%{name}-fix_utf.rb
 Patch0:		%{name}-pld.patch
+Patch1:		%{name}-ldap.patch
 Patch2:		%{name}-utf-regex.patch
 Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
@@ -125,6 +126,7 @@ rm -r vendor/plugins/rfpdf
 find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 
 %patch0 -p1
+%patch1 -p1
 %patch2 -p1
 %patch3 -p1
 %patch4 -p1
