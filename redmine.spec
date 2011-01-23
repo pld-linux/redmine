@@ -33,7 +33,6 @@ BuildRequires:	dos2unix
 BuildRequires:	perl-base
 BuildRequires:	rpm-perlprov
 BuildRequires:	rpmbuild(macros) >= 1.202
-BuildRequires:	ruby-rake >= 0.8.3
 Requires(postun):	/usr/sbin/userdel
 Requires(pre):	/bin/id
 Requires(pre):	/usr/sbin/useradd
