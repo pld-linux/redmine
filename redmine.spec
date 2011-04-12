@@ -6,7 +6,7 @@
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	1.0.4
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/73457/%{name}-%{version}.tar.gz

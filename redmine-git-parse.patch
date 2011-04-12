@@ -1,5 +1,14 @@
 --- redmine-0.9.4/lib/redmine/scm/adapters/git_adapter.rb~	2010-12-02 12:25:36.877495204 +0100
 +++ redmine-0.9.4/lib/redmine/scm/adapters/git_adapter.rb	2010-12-02 12:29:36.839495202 +0100
+@@ -92,7 +92,7 @@
+           shellout(cmd) do |io|
+             begin
+               id = io.gets.split[1]
+-              author = io.gets.match('Author:\s+(.*)$')[1]
++              author = io.gets.force_encoding(Encoding::ASCII_8BIT).match('Author:\s+(.*)$')[1]
+               2.times { io.gets }
+               time = Time.parse(io.gets.match('CommitDate:\s+(.*)$')[1]).localtime
+ 
 @@ -130,6 +130,7 @@
              revno = 1
  
