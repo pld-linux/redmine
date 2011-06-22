@@ -40,7 +40,7 @@ Requires:	apache(mod_rails)
 Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay
-Requires:	ruby-rails >= 2.3.5
+Requires:	ruby-rails2 >= 2.3.5
 Requires:	ruby-rake
 Requires:	ruby-rubytree
 Requires:	webapps
