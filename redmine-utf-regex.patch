@@ -1,7 +1,34 @@
-diff -ur redmine-0.9.3/app/controllers/messages_controller.rb redmine-0.9.3-utf/app/controllers/messages_controller.rb
---- redmine-0.9.3/app/controllers/messages_controller.rb	2010-03-08 17:22:10.072186592 +0100
-+++ redmine-0.9.3-utf/app/controllers/messages_controller.rb	2010-03-08 17:28:07.687124040 +0100
-@@ -96,7 +96,7 @@
+diff -ur redmine-1.2.0.orig/app/controllers/application_controller.rb redmine-1.2.0/app/controllers/application_controller.rb
+--- redmine-1.2.0.orig/app/controllers/application_controller.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/controllers/application_controller.rb	2011-07-08 12:32:03.834489185 +0200
+@@ -383,9 +383,9 @@
+   def parse_qvalues(value)
+     tmp = []
+     if value
+-      parts = value.split(/,\s*/)
++      parts = value.split(/,[:space:]*/)
+       parts.each {|part|
+-        if m = %r{^([^\s,]+?)(?:;\s*q=(\d+(?:\.\d+)?))?$}.match(part)
++        if m = %r{^([^[:space:],]+?)(?:;[:space:]*q=(\d+(?:\.\d+)?))?$}.match(part)
+           val = m[1]
+           q = (m[2] or 1).to_f
+           tmp.push([val, q])
+diff -ur redmine-1.2.0.orig/app/controllers/journals_controller.rb redmine-1.2.0/app/controllers/journals_controller.rb
+--- redmine-1.2.0.orig/app/controllers/journals_controller.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/controllers/journals_controller.rb	2011-07-08 12:32:16.986489183 +0200
+@@ -66,7 +66,7 @@
+       text = @issue.description
+     end
+     # Replaces pre blocks with [...]
+-    text = text.to_s.strip.gsub(%r{<pre>((.|\s)*?)</pre>}m, '[...]')
++    text = text.to_s.strip.gsub(%r{<pre>((.|[:space:])*?)</pre>}m, '[...]')
+     content = "#{ll(Setting.default_language, :text_user_wrote, user)}\n> "
+     content << text.gsub(/(\r?\n|\r\n?)/, "\n> ") + "\n\n"
+       
+diff -ur redmine-1.2.0.orig/app/controllers/messages_controller.rb redmine-1.2.0/app/controllers/messages_controller.rb
+--- redmine-1.2.0.orig/app/controllers/messages_controller.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/controllers/messages_controller.rb	2011-07-08 12:30:06.615489213 +0200
+@@ -113,7 +113,7 @@
      subject = @message.subject.gsub('"', '\"')
      subject = "RE: #{subject}" unless subject.starts_with?('RE:')
      content = "#{ll(Setting.default_language, :text_user_wrote, user)}\\n> "
@@ -10,9 +37,9 @@ diff -ur redmine-0.9.3/app/controllers/messages_controller.rb redmine-0.9.3-utf/
      render(:update) { |page|
        page << "$('reply_subject').value = \"#{subject}\";"
        page.<< "$('message_content').value = \"#{content}\";"
-diff -ur redmine-0.9.3/app/controllers/search_controller.rb redmine-0.9.3-utf/app/controllers/search_controller.rb
---- redmine-0.9.3/app/controllers/search_controller.rb	2010-03-08 17:22:10.071182579 +0100
-+++ redmine-0.9.3-utf/app/controllers/search_controller.rb	2010-03-08 17:28:01.486187436 +0100
+diff -ur redmine-1.2.0.orig/app/controllers/search_controller.rb redmine-1.2.0/app/controllers/search_controller.rb
+--- redmine-1.2.0.orig/app/controllers/search_controller.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/controllers/search_controller.rb	2011-07-08 12:30:06.615489213 +0200
 @@ -61,7 +61,7 @@
      
      # extract tokens from the question
@@ -22,102 +49,126 @@ diff -ur redmine-0.9.3/app/controllers/search_controller.rb redmine-0.9.3-utf/ap
      # tokens must be at least 2 characters long
      @tokens = @tokens.uniq.select {|w| w.length > 1 }
      
-diff -ur redmine-0.9.3/app/models/changeset.rb redmine-0.9.3-utf/app/models/changeset.rb
---- redmine-0.9.3/app/models/changeset.rb	2010-03-08 17:22:10.025186088 +0100
-+++ redmine-0.9.3-utf/app/models/changeset.rb	2010-03-08 17:24:51.520260172 +0100
-@@ -93,11 +93,11 @@
-     if ref_keywords.delete('*')
-       # find any issue ID in the comments
-       target_issue_ids = []
--      comments.scan(%r{([\s\(\[,-]|^)#(\d+)(?=[[:punct:]]|\s|<|$)}).each { |m| target_issue_ids << m[1] }
-+      comments.scan(%r{([[:space:]\(\[,-]|^)#(\d+)(?=[[:punct:]]|[[:space:]]|<|$)}).each { |m| target_issue_ids << m[1] }
-       referenced_issues += find_referenced_issues_by_id(target_issue_ids)
+diff -ur redmine-1.2.0.orig/app/helpers/application_helper.rb redmine-1.2.0/app/helpers/application_helper.rb
+--- redmine-1.2.0.orig/app/helpers/application_helper.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/helpers/application_helper.rb	2011-07-08 12:35:13.399489143 +0200
+@@ -505,7 +505,7 @@
+     # when using an image link, try to use an attachment, if possible
+     if options[:attachments] || (obj && obj.respond_to?(:attachments))
+       attachments = nil
+-      text.gsub!(/src="([^\/"]+\.(bmp|gif|jpg|jpeg|png))"(\s+alt="([^"]*)")?/i) do |m|
++      text.gsub!(/src="([^\/"]+\.(bmp|gif|jpg|jpeg|png))"([:space:]+alt="([^"]*)")?/i) do |m|
+         filename, ext, alt, alttext = $1.downcase, $2, $3, $4
+         attachments ||= (options[:attachments] || obj.attachments).sort_by(&:created_on).reverse
+         # search for the picture in attachments
+@@ -603,7 +603,7 @@
+   #     identifier:version:1.0.0
+   #     identifier:source:some/file
+   def parse_redmine_links(text, project, obj, attr, only_path, options)
+-    text.gsub!(%r{([\s\(,\-\[\>]|^)(!)?(([a-z0-9\-]+):)?(attachment|document|version|commit|source|export|message|project)?((#|r)(\d+)|(:)([^"\s<>][^\s<>]*?|"[^"]+?"))(?=(?=[[:punct:]]\W)|,|\s|\]|<|$)}) do |m|
++    text.gsub!(%r{([[:space:]\(,\-\[\>]|^)(!)?(([a-z0-9\-]+):)?(attachment|document|version|commit|source|export|message|project)?((#|r)(\d+)|(:)([^"[:space:]<>][^[:space:]<>]*?|"[^"]+?"))(?=(?=[[:punct:]]\W)|,|[:space:]|\]|<|$)}) do |m|
+       leading, esc, project_prefix, project_identifier, prefix, sep, identifier = $1, $2, $3, $4, $5, $7 || $9, $8 || $10
+       link = nil
+       if project_identifier
+@@ -703,7 +703,7 @@
+     text.gsub!(HEADING_RE) do
+       level, attrs, content = $1.to_i, $2, $3
+       item = strip_tags(content).strip
+-      anchor = item.gsub(%r{[^\w\s\-]}, '').gsub(%r{\s+(\-+\s*)?}, '-')
++      anchor = item.gsub(%r{[^[:word:][:space:]\-]}, '').gsub(%r{[:space:]+(\-+[:space:]*)?}, '-')
+       @parsed_headings << [level, anchor, item]
+       "<a name=\"#{anchor}\"></a>\n<h#{level} #{attrs}>#{content}<a href=\"##{anchor}\" class=\"wiki-anchor\">&para;</a></h#{level}>"
      end
-     
--    comments.scan(Regexp.new("(#{kw_regexp})[\s:]+(([\s,;&]*#?\\d+)+)", Regexp::IGNORECASE)).each do |match|
-+    comments.scan(Regexp.new("(#{kw_regexp})[[:space:]:]+(([[:space:],;&]*#?\\d+)+)", Regexp::IGNORECASE)).each do |match|
-       action = match[0]
-       target_issue_ids = match[1].scan(/\d+/)
-       target_issues = find_referenced_issues_by_id(target_issue_ids)
-diff -ur redmine-0.9.3/app/models/custom_field.rb redmine-0.9.3-utf/app/models/custom_field.rb
---- redmine-0.9.3/app/models/custom_field.rb	2010-03-08 17:22:10.021186739 +0100
-+++ redmine-0.9.3-utf/app/models/custom_field.rb	2010-03-08 17:23:34.114124255 +0100
-@@ -32,7 +32,7 @@
-   validates_presence_of :name, :field_format
-   validates_uniqueness_of :name, :scope => :type
-   validates_length_of :name, :maximum => 30
--  validates_format_of :name, :with => /^[\w\s\.\'\-]*$/i
-+  validates_format_of :name, :with => /^[[:word:][:space:]\.\'\-]*$/i
-   validates_inclusion_of :field_format, :in => Redmine::CustomFieldFormat.available_formats
+diff -ur redmine-1.2.0.orig/app/models/attachment.rb redmine-1.2.0/app/models/attachment.rb
+--- redmine-1.2.0.orig/app/models/attachment.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/attachment.rb	2011-07-08 12:34:32.404489152 +0200
+@@ -169,7 +169,7 @@
+     # INCORRECT: just_filename = File.basename(value.gsub('\\\\', '/'))
  
-   def initialize(attributes = nil)
-diff -ur redmine-0.9.3/app/models/issue_status.rb redmine-0.9.3-utf/app/models/issue_status.rb
---- redmine-0.9.3/app/models/issue_status.rb	2010-03-08 17:22:10.004186506 +0100
-+++ redmine-0.9.3-utf/app/models/issue_status.rb	2010-03-08 17:26:32.231129980 +0100
-@@ -23,7 +23,7 @@
-   validates_presence_of :name
-   validates_uniqueness_of :name
-   validates_length_of :name, :maximum => 30
--  validates_format_of :name, :with => /^[\w\s\'\-]*$/i
-+  validates_format_of :name, :with => /^[[:word:][:space:]\'\-]*$/i
-   validates_inclusion_of :default_done_ratio, :in => 0..100, :allow_nil => true
+     # Finally, replace all non alphanumeric, hyphens or periods with underscore
+-    @filename = just_filename.gsub(/[^\w\.\-]/,'_')
++    @filename = just_filename.gsub(/[^[:word:]\.\-]/,'_')
+   end
  
-   def after_save
-diff -ur redmine-0.9.3/app/models/role.rb redmine-0.9.3-utf/app/models/role.rb
---- redmine-0.9.3/app/models/role.rb	2010-03-08 17:22:09.991181456 +0100
-+++ redmine-0.9.3-utf/app/models/role.rb	2010-03-08 17:25:06.001124077 +0100
-@@ -43,7 +43,7 @@
-   validates_presence_of :name
-   validates_uniqueness_of :name
-   validates_length_of :name, :maximum => 30
--  validates_format_of :name, :with => /^[\w\s\'\-]*$/i
-+  validates_format_of :name, :with => /^[[:word:][:space:]\'\-]*$/i
+   # Returns an ASCII or hashed filename
+diff -ur redmine-1.2.0.orig/app/models/changeset.rb redmine-1.2.0/app/models/changeset.rb
+--- redmine-1.2.0.orig/app/models/changeset.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/changeset.rb	2011-07-08 12:32:32.970489180 +0200
+@@ -114,11 +114,11 @@
  
-   def permissions
-     read_attribute(:permissions) || []
-diff -ur redmine-0.9.3/app/models/setting.rb redmine-0.9.3-utf/app/models/setting.rb
---- redmine-0.9.3/app/models/setting.rb	2010-03-08 17:22:10.000186552 +0100
-+++ redmine-0.9.3-utf/app/models/setting.rb	2010-03-08 17:25:52.170123775 +0100
-@@ -137,7 +137,7 @@
-   
+     referenced_issues = []
+ 
+-    comments.scan(/([\s\(\[,-]|^)((#{kw_regexp})[\s:]+)?(#\d+(\s+@#{TIMELOG_RE})?([\s,;&]+#\d+(\s+@#{TIMELOG_RE})?)*)(?=[[:punct:]]|\s|<|$)/i) do |match|
++    comments.scan(/([[:space:]\(\[,-]|^)((#{kw_regexp})[[:space:]:]+)?(#\d+([:space:]+@#{TIMELOG_RE})?([[:space:],;&]+#\d+([:space:]+@#{TIMELOG_RE})?)*)(?=[[:punct:]]|[:space:]|<|$)/i) do |match|
+       action, refs = match[2], match[3]
+       next unless action.present? || ref_keywords_any
+ 
+-      refs.scan(/#(\d+)(\s+@#{TIMELOG_RE})?/).each do |m|
++      refs.scan(/#(\d+)([:space:]+@#{TIMELOG_RE})?/).each do |m|
+         issue, hours = find_referenced_issue_by_id(m[0].to_i), m[2]
+         if issue
+           referenced_issues << issue
+diff -ur redmine-1.2.0.orig/app/models/mail_handler.rb redmine-1.2.0/app/models/mail_handler.rb
+--- redmine-1.2.0.orig/app/models/mail_handler.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/mail_handler.rb	2011-07-08 12:32:45.277489177 +0200
+@@ -246,7 +246,7 @@
+     keys.reject! {|k| k.blank?}
+     keys.collect! {|k| Regexp.escape(k)}
+     format ||= '.+'
+-    text.gsub!(/^(#{keys.join('|')})[ \t]*:[ \t]*(#{format})\s*$/i, '')
++    text.gsub!(/^(#{keys.join('|')})[ \t]*:[ \t]*(#{format})[:space:]*$/i, '')
+     $2 && $2.strip
+   end
+ 
+@@ -348,7 +348,7 @@
+   def cleanup_body(body)
+     delimiters = Setting.mail_handler_body_delimiters.to_s.split(/[\r\n]+/).reject(&:blank?).map {|s| Regexp.escape(s)}
+     unless delimiters.empty?
+-      regex = Regexp.new("^[> ]*(#{ delimiters.join('|') })\s*[\r\n].*", Regexp::MULTILINE)
++      regex = Regexp.new("^[> ]*(#{ delimiters.join('|') })[:space:]*[\r\n].*", Regexp::MULTILINE)
+       body = body.gsub(regex, '')
+     end
+     body.strip
+diff -ur redmine-1.2.0.orig/app/models/repository/subversion.rb redmine-1.2.0/app/models/repository/subversion.rb
+--- redmine-1.2.0.orig/app/models/repository/subversion.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/repository/subversion.rb	2011-07-08 12:33:59.991489160 +0200
+@@ -20,7 +20,7 @@
+ class Repository::Subversion < Repository
+   attr_protected :root_url
+   validates_presence_of :url
+-  validates_format_of :url, :with => /^(http|https|svn(\+[^\s:\/\\]+)?|file):\/\/.+/i
++  validates_format_of :url, :with => /^(http|https|svn(\+[^[:space:]:\/\\]+)?|file):\/\/.+/i
+ 
+   def self.scm_adapter_class
+     Redmine::Scm::Adapters::SubversionAdapter
+diff -ur redmine-1.2.0.orig/app/models/setting.rb redmine-1.2.0/app/models/setting.rb
+--- redmine-1.2.0.orig/app/models/setting.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/setting.rb	2011-07-08 12:30:06.619489213 +0200
+@@ -138,7 +138,7 @@
+ 
    # Helper that returns an array based on per_page_options setting
    def self.per_page_options_array
 -    per_page_options.split(%r{[\s,]}).collect(&:to_i).select {|n| n > 0}.sort
 +    per_page_options.split(%r{[[:space:],]}).collect(&:to_i).select {|n| n > 0}.sort
    end
-   
-   def self.openid?
-diff -ur redmine-0.9.3/app/models/tracker.rb redmine-0.9.3-utf/app/models/tracker.rb
---- redmine-0.9.3/app/models/tracker.rb	2010-03-08 17:22:09.999182515 +0100
-+++ redmine-0.9.3-utf/app/models/tracker.rb	2010-03-08 17:25:37.190124681 +0100
-@@ -31,7 +31,7 @@
-   validates_presence_of :name
-   validates_uniqueness_of :name
-   validates_length_of :name, :maximum => 30
--  validates_format_of :name, :with => /^[\w\s\'\-]*$/i
-+  validates_format_of :name, :with => /^[[:word:][:space:]\'\-]*$/i
  
-   def to_s; name end
-   
-diff -ur redmine-0.9.3/app/models/user.rb redmine-0.9.3-utf/app/models/user.rb
---- redmine-0.9.3/app/models/user.rb	2010-03-08 17:22:09.999182515 +0100
-+++ redmine-0.9.3-utf/app/models/user.rb	2010-03-08 17:26:19.614187140 +0100
-@@ -58,9 +58,9 @@
-   # Login must contain lettres, numbers, underscores only
+   def self.openid?
+diff -ur redmine-1.2.0.orig/app/models/user.rb redmine-1.2.0/app/models/user.rb
+--- redmine-1.2.0.orig/app/models/user.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/user.rb	2011-07-08 12:30:06.620489213 +0200
+@@ -69,7 +69,7 @@
    validates_format_of :login, :with => /^[a-z0-9_\-@\.]*$/i
    validates_length_of :login, :maximum => 30
--  validates_format_of :firstname, :lastname, :with => /^[\w\s\'\-\.]*$/i
-+  validates_format_of :firstname, :lastname, :with => /^[[:word:][:space:]\'\-\.]*$/i
    validates_length_of :firstname, :lastname, :maximum => 30
 -  validates_format_of :mail, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
 +  validates_format_of :mail, :with => /^([^@[:space:]]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
    validates_length_of :mail, :maximum => 60, :allow_nil => true
    validates_confirmation_of :password, :allow_nil => true
- 
-diff -ur redmine-0.9.3/app/models/wiki_page.rb redmine-0.9.3-utf/app/models/wiki_page.rb
---- redmine-0.9.3/app/models/wiki_page.rb	2010-03-08 17:22:10.023186767 +0100
-+++ redmine-0.9.3-utf/app/models/wiki_page.rb	2010-03-08 17:24:23.136124038 +0100
-@@ -37,7 +37,7 @@
+   validates_inclusion_of :mail_notification, :in => MAIL_NOTIFICATION_OPTIONS.collect(&:first), :allow_blank => true
+diff -ur redmine-1.2.0.orig/app/models/wiki_page.rb redmine-1.2.0/app/models/wiki_page.rb
+--- redmine-1.2.0.orig/app/models/wiki_page.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/wiki_page.rb	2011-07-08 12:33:48.833489160 +0200
+@@ -38,7 +38,7 @@
    attr_accessor :redirect_existing_links
    
    validates_presence_of :title
@@ -126,22 +177,10 @@ diff -ur redmine-0.9.3/app/models/wiki_page.rb redmine-0.9.3-utf/app/models/wiki
    validates_uniqueness_of :title, :scope => :wiki_id, :case_sensitive => false
    validates_associated :content
    
-@@ -146,9 +146,9 @@
-   def initialize(content_to, content_from)
-     @content_to = content_to
-     @content_from = content_from
--    @words = content_to.text.split(/(\s+)/)
-+    @words = content_to.text.split(/([[:space:]]+)/)
-     @words = @words.select {|word| word != ' '}
--    words_from = content_from.text.split(/(\s+)/)
-+    words_from = content_from.text.split(/([[:space:]]+)/)
-     words_from = words_from.select {|word| word != ' '}    
-     @diff = words_from.diff @words
-   end
-diff -ur redmine-0.9.3/app/models/wiki.rb redmine-0.9.3-utf/app/models/wiki.rb
---- redmine-0.9.3/app/models/wiki.rb	2010-03-08 17:22:10.004186506 +0100
-+++ redmine-0.9.3-utf/app/models/wiki.rb	2010-03-08 17:26:42.109124846 +0100
-@@ -71,7 +71,7 @@
+diff -ur redmine-1.2.0.orig/app/models/wiki.rb redmine-1.2.0/app/models/wiki.rb
+--- redmine-1.2.0.orig/app/models/wiki.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0/app/models/wiki.rb	2011-07-08 12:30:06.621489213 +0200
+@@ -86,7 +86,7 @@
    # turn a string into a valid page title
    def self.titleize(title)
      # replace spaces with _ and remove unwanted caracters

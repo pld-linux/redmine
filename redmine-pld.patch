@@ -18,12 +18,14 @@ diff -ur redmine-0.9.3/app/models/auth_source_ldap.rb redmine-0.9.3-fixes/app/mo
 diff -ur redmine-0.9.3/config/environment.rb redmine-0.9.3-fixes/config/environment.rb
 --- redmine-0.9.3/config/environment.rb	2010-02-28 11:28:08.000000000 +0100
 +++ redmine-0.9.3-fixes/config/environment.rb	2010-03-02 23:58:55.000000000 +0100
-@@ -50,7 +50,7 @@
+@@ -50,8 +50,8 @@
    # It will automatically turn deliveries on
    config.action_mailer.perform_deliveries = false
  
 -  config.gem 'rubytree', :lib => 'tree'
+-  config.gem 'coderay', :version => '~>0.9.7'
 +  require 'tree' # rubytree
++  require 'coderay' # coderay ~>0.9.7
    
    # Load any local configuration that is kept out of source control
    # (e.g. gems, patches).

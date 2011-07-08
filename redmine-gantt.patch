@@ -1,14 +1,14 @@
 --- redmine/app/views/gantts/show.html.erb~	2010-03-13 18:47:18.559124715 +0100
 +++ redmine/app/views/gantts/show.html.erb	2010-03-13 18:47:21.031124401 +0100
 @@ -62,7 +62,7 @@
-     end
  end
- 
+
+ # Width of the entire chart    
 -g_width = (@gantt.date_to - @gantt.date_from + 1)*zoom
 +g_width = (@gantt.date_to.jd - @gantt.date_from.jd + 1)*zoom
- g_height = [(20 * @gantt.events.length + 6)+150, 206].max
- t_height = g_height + headers_height
- %>
+ 
+ @gantt.render(:top => headers_height + 8, :zoom => zoom, :g_width => g_width, :subject_width => subject_width)
+ 
 @@ -106,7 +106,7 @@
  left = 0
  height = (show_weeks ? header_heigth : header_heigth + g_height)

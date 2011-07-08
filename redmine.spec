@@ -22,7 +22,6 @@ Patch2:		%{name}-utf-regex.patch
 Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
 Patch5:		%{name}-csv-utf.patch
-Patch7:		%{name}-mercurial.patch
 Patch8:		%{name}-gantt.patch
 Patch9:		%{name}-git-parse.patch
 URL:		http://www.redmine.org/
@@ -36,10 +35,10 @@ Requires(pre):	/usr/sbin/useradd
 Requires:	apache(mod_rails)
 Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
-Requires:	ruby-coderay
+Requires:	ruby-coderay >= 0.9.7
 Requires:	ruby-rails2 = 2.3.11
 Requires:	ruby-rake
-Requires:	ruby-rubytree
+Requires:	ruby-rubytree >= 0.5.2
 Requires:	webapps
 Requires:	webserver(alias)
 Suggests:	cvs
@@ -112,7 +111,6 @@ Test suite for Redmine.
 
 %{__rm} -r vendor/gems
 %{__rm} -r vendor/plugins/ruby-net-ldap*
-%{__rm} -r vendor/plugins/coderay*
 %{__rm} -r vendor/rails
 
 find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
@@ -123,7 +121,6 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch7 -p1
 %patch8 -p1
 %patch9 -p1
 
@@ -157,8 +154,9 @@ install -p extra/svn/Redmine.pm $RPM_BUILD_ROOT%{perl_vendorlib}/Apache
 
 cp -a config $RPM_BUILD_ROOT%{_sysconfdir}
 install -p config/additional_environment.rb.example $RPM_BUILD_ROOT%{_sysconfdir}/config/additional_environment.rb
+install -p config/configuration.yml.example $RPM_BUILD_ROOT%{_sysconfdir}/config/configuration.yml
 install -p config/database.yml.example $RPM_BUILD_ROOT%{_sysconfdir}/config/database.yml
-grep "^#" config/email.yml.example >$RPM_BUILD_ROOT%{_sysconfdir}/config/email.yml
+install -p config/settings.yml $RPM_BUILD_ROOT%{_sysconfdir}/config/settings.yml
 ln -s %{_sysconfdir}/config $RPM_BUILD_ROOT%{_datadir}/%{name}
 
 install %{SOURCE3} $RPM_BUILD_ROOT%{_sysconfdir}/config/initializers/fix_params.rb
@@ -233,6 +231,7 @@ fi
 %{_datadir}/%{name}/public/stylesheets
 %{_datadir}/%{name}/public/themes
 %{_datadir}/%{name}/public/*.html
+%{_datadir}/%{name}/public/favicon.ico
 %attr(755,redmine,root) %{_datadir}/%{name}/public/dispatch.*
 %dir %{_datadir}/%{name}/script
 %dir %{_datadir}/%{name}/script/performance

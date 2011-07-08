@@ -3,12 +3,12 @@
 @@ -92,7 +92,7 @@
            shellout(cmd) do |io|
              begin
-               id = io.gets.split[1]
--              author = io.gets.match('Author:\s+(.*)$')[1]
-+              author = io.gets.force_encoding(Encoding::ASCII_8BIT).match('Author:\s+(.*)$')[1]
-               2.times { io.gets }
-               time = Time.parse(io.gets.match('CommitDate:\s+(.*)$')[1]).localtime
+               id = lines[0].split[1]
+-              author = lines[1].match('Author:\s+(.*)$')[1]
++              author = lines[1].force_encoding(Encoding::ASCII_8BIT).match('Author:\s+(.*)$')[1]
+               time = Time.parse(lines[4].match('CommitDate:\s+(.*)$')[1])
  
+               Revision.new({
 @@ -130,6 +130,7 @@
              revno = 1
  

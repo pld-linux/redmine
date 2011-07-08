@@ -1,15 +1,15 @@
-diff -ur redmine-0.9.3-mdomain/app/models/auth_source_ldap.rb /usr/share/redmine//app/models/auth_source_ldap.rb
---- redmine-0.9.3-mdomain/app/models/auth_source_ldap.rb	2010-03-09 16:10:27.000000000 +0100
-+++ /usr/share/redmine//app/models/auth_source_ldap.rb	2010-03-09 15:58:14.025186618 +0100
-@@ -28,6 +28,7 @@
-   validates_length_of :name, :host, :account_password, :maximum => 60, :allow_nil => true
-   validates_length_of :account, :base_dn, :maximum => 255, :allow_nil => true
+diff -urN redmine-1.2.0.orig/app/models/auth_source_ldap.rb redmine-1.2.0.maildomain/app/models/auth_source_ldap.rb
+--- redmine-1.2.0.orig/app/models/auth_source_ldap.rb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0.maildomain/app/models/auth_source_ldap.rb	2011-07-08 12:38:04.309489104 +0200
+@@ -23,6 +23,7 @@
+   validates_length_of :name, :host, :maximum => 60, :allow_nil => true
+   validates_length_of :account, :account_password, :base_dn, :maximum => 255, :allow_nil => true
    validates_length_of :attr_login, :attr_firstname, :attr_lastname, :attr_mail, :maximum => 30, :allow_nil => true
 +  validates_length_of :maildomain, :maximum => 255, :allow_nil => true
    validates_numericality_of :port, :only_integer => true
    
    before_validation :strip_ldap_attributes
-@@ -63,7 +64,7 @@
+@@ -58,7 +59,7 @@
    private
    
    def strip_ldap_attributes
@@ -18,7 +18,7 @@ diff -ur redmine-0.9.3-mdomain/app/models/auth_source_ldap.rb /usr/share/redmine
        write_attribute(attr, read_attribute(attr).strip) unless read_attribute(attr).nil?
      end
    end
-@@ -77,12 +78,12 @@
+@@ -72,12 +73,12 @@
      Net::LDAP.new options
    end
  
@@ -33,7 +33,7 @@ diff -ur redmine-0.9.3-mdomain/app/models/auth_source_ldap.rb /usr/share/redmine
       :auth_source_id => self.id
      }
    end
-@@ -116,7 +117,7 @@
+@@ -111,7 +112,7 @@
                       :attributes=> search_attributes) do |entry|
  
        if onthefly_register?
@@ -42,7 +42,7 @@ diff -ur redmine-0.9.3-mdomain/app/models/auth_source_ldap.rb /usr/share/redmine
        else
          attrs = {:dn => entry.dn}
        end
-@@ -132,4 +133,12 @@
+@@ -127,4 +128,12 @@
        entry[attr_name].is_a?(Array) ? entry[attr_name].first : entry[attr_name]
      end
    end
@@ -55,10 +55,10 @@ diff -ur redmine-0.9.3-mdomain/app/models/auth_source_ldap.rb /usr/share/redmine
 +    addr
 +  end
  end
-diff -ur redmine-0.9.3-mdomain/app/views/auth_sources/_form.html.erb /usr/share/redmine//app/views/auth_sources/_form.html.erb
---- redmine-0.9.3-mdomain/app/views/auth_sources/_form.html.erb	2010-03-09 16:10:27.000000000 +0100
-+++ /usr/share/redmine//app/views/auth_sources/_form.html.erb	2010-03-09 16:09:10.526247745 +0100
-@@ -25,6 +25,9 @@
+diff -urN redmine-1.2.0.orig/app/views/auth_sources/_form.html.erb redmine-1.2.0.maildomain/app/views/auth_sources/_form.html.erb
+--- redmine-1.2.0.orig/app/views/auth_sources/_form.html.erb	2011-05-30 18:51:16.000000000 +0200
++++ redmine-1.2.0.maildomain/app/views/auth_sources/_form.html.erb	2011-07-08 12:38:33.934489097 +0200
+@@ -7,6 +7,9 @@
  
  <p><label for="auth_source_onthefly_register"><%=l(:field_onthefly)%></label>
  <%= check_box 'auth_source', 'onthefly_register' %></p>
@@ -67,10 +67,406 @@ diff -ur redmine-0.9.3-mdomain/app/views/auth_sources/_form.html.erb /usr/share/
 +<%= text_field 'auth_source', 'maildomain', :size => 60  %></p>
  </div>
  
- <fieldset class="box"><legend><%=l(:label_attribute_plural)%></legend>
-diff -ur redmine-0.9.3-mdomain/db/migrate/001_setup.rb /usr/share/redmine//db/migrate/001_setup.rb
---- redmine-0.9.3-mdomain/db/migrate/001_setup.rb	2010-03-09 16:10:27.000000000 +0100
-+++ /usr/share/redmine//db/migrate/001_setup.rb	2010-03-09 15:58:39.840124128 +0100
+ <!--[eoform:auth_source]-->
+diff -urN redmine-1.2.0.orig/config/locales/bg.yml redmine-1.2.0.maildomain/config/locales/bg.yml
+--- redmine-1.2.0.orig/config/locales/bg.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/bg.yml	2011-07-08 12:39:42.282489080 +0200
+@@ -975,3 +975,5 @@
+   enumeration_doc_categories: Категории документи
+   enumeration_activities: Дейности (time tracking)
+   enumeration_system_activity: Системна активност
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/bs.yml redmine-1.2.0.maildomain/config/locales/bs.yml
+--- redmine-1.2.0.orig/config/locales/bs.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/bs.yml	2011-07-08 12:41:21.844489058 +0200
+@@ -990,3 +990,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/ca.yml redmine-1.2.0.maildomain/config/locales/ca.yml
+--- redmine-1.2.0.orig/config/locales/ca.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/ca.yml	2011-07-08 12:41:19.981489063 +0200
+@@ -979,3 +979,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/cs.yml redmine-1.2.0.maildomain/config/locales/cs.yml
+--- redmine-1.2.0.orig/config/locales/cs.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/cs.yml	2011-07-08 12:41:18.208489060 +0200
+@@ -980,3 +980,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/da.yml redmine-1.2.0.maildomain/config/locales/da.yml
+--- redmine-1.2.0.orig/config/locales/da.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/da.yml	2011-07-08 12:41:15.840489059 +0200
+@@ -993,3 +993,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/de.yml redmine-1.2.0.maildomain/config/locales/de.yml
+--- redmine-1.2.0.orig/config/locales/de.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/de.yml	2011-07-08 12:41:13.855489061 +0200
+@@ -993,3 +993,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/el.yml redmine-1.2.0.maildomain/config/locales/el.yml
+--- redmine-1.2.0.orig/config/locales/el.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/el.yml	2011-07-08 12:41:08.490489063 +0200
+@@ -976,3 +976,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/en-GB.yml redmine-1.2.0.maildomain/config/locales/en-GB.yml
+--- redmine-1.2.0.orig/config/locales/en-GB.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/en-GB.yml	2011-07-08 12:41:06.572489057 +0200
+@@ -979,3 +979,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/en.yml redmine-1.2.0.maildomain/config/locales/en.yml
+--- redmine-1.2.0.orig/config/locales/en.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/en.yml	2011-07-08 12:41:02.602489063 +0200
+@@ -975,3 +975,5 @@
+   enumeration_doc_categories: Document categories
+   enumeration_activities: Activities (time tracking)
+   enumeration_system_activity: System Activity
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/es.yml redmine-1.2.0.maildomain/config/locales/es.yml
+--- redmine-1.2.0.orig/config/locales/es.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/es.yml	2011-07-08 12:41:00.758489063 +0200
+@@ -1013,3 +1013,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/eu.yml redmine-1.2.0.maildomain/config/locales/eu.yml
+--- redmine-1.2.0.orig/config/locales/eu.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/eu.yml	2011-07-08 12:40:59.067489063 +0200
+@@ -980,3 +980,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/fa.yml redmine-1.2.0.maildomain/config/locales/fa.yml
+--- redmine-1.2.0.orig/config/locales/fa.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/fa.yml	2011-07-08 12:40:57.350489062 +0200
+@@ -979,3 +979,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/fi.yml redmine-1.2.0.maildomain/config/locales/fi.yml
+--- redmine-1.2.0.orig/config/locales/fi.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/fi.yml	2011-07-08 12:40:54.532489064 +0200
+@@ -997,3 +997,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/fr.yml redmine-1.2.0.maildomain/config/locales/fr.yml
+--- redmine-1.2.0.orig/config/locales/fr.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/fr.yml	2011-07-08 12:40:52.750489064 +0200
+@@ -991,3 +991,5 @@
+   label_git_report_last_commit: Afficher le dernier commit des fichiers et répertoires
+   text_scm_config: Vous pouvez configurer les commandes des SCM dans config/configuration.yml. Redémarrer l'application après modification.
+   text_scm_command_not_available: Ce SCM n'est pas disponible. Vérifier les paramètres dans la section administration.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/gl.yml redmine-1.2.0.maildomain/config/locales/gl.yml
+--- redmine-1.2.0.orig/config/locales/gl.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/gl.yml	2011-07-08 12:40:51.005489066 +0200
+@@ -988,3 +988,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/he.yml redmine-1.2.0.maildomain/config/locales/he.yml
+--- redmine-1.2.0.orig/config/locales/he.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/he.yml	2011-07-08 12:40:49.275489066 +0200
+@@ -981,3 +981,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/hr.yml redmine-1.2.0.maildomain/config/locales/hr.yml
+--- redmine-1.2.0.orig/config/locales/hr.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/hr.yml	2011-07-08 12:40:47.590489065 +0200
+@@ -983,3 +983,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/hu.yml redmine-1.2.0.maildomain/config/locales/hu.yml
+--- redmine-1.2.0.orig/config/locales/hu.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/hu.yml	2011-07-08 12:40:45.845489066 +0200
+@@ -995,3 +995,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/id.yml redmine-1.2.0.maildomain/config/locales/id.yml
+--- redmine-1.2.0.orig/config/locales/id.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/id.yml	2011-07-08 12:40:42.787489067 +0200
+@@ -984,3 +984,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/it.yml redmine-1.2.0.maildomain/config/locales/it.yml
+--- redmine-1.2.0.orig/config/locales/it.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/it.yml	2011-07-08 12:40:40.568489069 +0200
+@@ -977,3 +977,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/ja.yml redmine-1.2.0.maildomain/config/locales/ja.yml
+--- redmine-1.2.0.orig/config/locales/ja.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/ja.yml	2011-07-08 12:40:38.810489071 +0200
+@@ -998,3 +998,5 @@
+   permission_set_issues_private: チケットをプライベートに設定
+   label_issues_visibility_public: プライベートチケット以外
+   text_issues_destroy_descendants_confirmation: %{count}個の子チケットも削除されます。
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/ko.yml redmine-1.2.0.maildomain/config/locales/ko.yml
+--- redmine-1.2.0.orig/config/locales/ko.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/ko.yml	2011-07-08 12:40:37.073489063 +0200
+@@ -1028,3 +1028,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/lt.yml redmine-1.2.0.maildomain/config/locales/lt.yml
+--- redmine-1.2.0.orig/config/locales/lt.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/lt.yml	2011-07-08 12:40:35.137489069 +0200
+@@ -1036,3 +1036,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/lv.yml redmine-1.2.0.maildomain/config/locales/lv.yml
+--- redmine-1.2.0.orig/config/locales/lv.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/lv.yml	2011-07-08 12:40:33.343489070 +0200
+@@ -971,3 +971,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/mk.yml redmine-1.2.0.maildomain/config/locales/mk.yml
+--- redmine-1.2.0.orig/config/locales/mk.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/mk.yml	2011-07-08 12:40:31.587489069 +0200
+@@ -976,3 +976,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/mn.yml redmine-1.2.0.maildomain/config/locales/mn.yml
+--- redmine-1.2.0.orig/config/locales/mn.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/mn.yml	2011-07-08 12:40:29.854489070 +0200
+@@ -977,3 +977,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/nl.yml redmine-1.2.0.maildomain/config/locales/nl.yml
+--- redmine-1.2.0.orig/config/locales/nl.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/nl.yml	2011-07-08 12:40:28.077489074 +0200
+@@ -958,3 +958,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/no.yml redmine-1.2.0.maildomain/config/locales/no.yml
+--- redmine-1.2.0.orig/config/locales/no.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/no.yml	2011-07-08 12:40:26.191489070 +0200
+@@ -963,3 +963,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/pl.yml redmine-1.2.0.maildomain/config/locales/pl.yml
+--- redmine-1.2.0.orig/config/locales/pl.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/pl.yml	2011-07-08 12:40:24.365489071 +0200
+@@ -993,3 +993,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/pt-BR.yml redmine-1.2.0.maildomain/config/locales/pt-BR.yml
+--- redmine-1.2.0.orig/config/locales/pt-BR.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/pt-BR.yml	2011-07-08 12:40:22.525489072 +0200
+@@ -996,3 +996,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/pt.yml redmine-1.2.0.maildomain/config/locales/pt.yml
+--- redmine-1.2.0.orig/config/locales/pt.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/pt.yml	2011-07-08 12:40:20.394489073 +0200
+@@ -981,3 +981,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/ro.yml redmine-1.2.0.maildomain/config/locales/ro.yml
+--- redmine-1.2.0.orig/config/locales/ro.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/ro.yml	2011-07-08 12:40:18.512489073 +0200
+@@ -969,3 +969,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/ru.yml redmine-1.2.0.maildomain/config/locales/ru.yml
+--- redmine-1.2.0.orig/config/locales/ru.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/ru.yml	2011-07-08 12:40:16.512489072 +0200
+@@ -1089,3 +1089,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/sk.yml redmine-1.2.0.maildomain/config/locales/sk.yml
+--- redmine-1.2.0.orig/config/locales/sk.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/sk.yml	2011-07-08 12:40:14.434489074 +0200
+@@ -971,3 +971,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/sl.yml redmine-1.2.0.maildomain/config/locales/sl.yml
+--- redmine-1.2.0.orig/config/locales/sl.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/sl.yml	2011-07-08 12:40:12.215489075 +0200
+@@ -972,3 +972,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/sr.yml redmine-1.2.0.maildomain/config/locales/sr.yml
+--- redmine-1.2.0.orig/config/locales/sr.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/sr.yml	2011-07-08 12:40:08.005489076 +0200
+@@ -977,3 +977,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/sr-YU.yml redmine-1.2.0.maildomain/config/locales/sr-YU.yml
+--- redmine-1.2.0.orig/config/locales/sr-YU.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/sr-YU.yml	2011-07-08 12:40:10.089489074 +0200
+@@ -976,3 +976,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/sv.yml redmine-1.2.0.maildomain/config/locales/sv.yml
+--- redmine-1.2.0.orig/config/locales/sv.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/sv.yml	2011-07-08 12:40:05.627489076 +0200
+@@ -1017,3 +1017,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/th.yml redmine-1.2.0.maildomain/config/locales/th.yml
+--- redmine-1.2.0.orig/config/locales/th.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/th.yml	2011-07-08 12:40:03.158489077 +0200
+@@ -973,3 +973,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/tr.yml redmine-1.2.0.maildomain/config/locales/tr.yml
+--- redmine-1.2.0.orig/config/locales/tr.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/tr.yml	2011-07-08 12:40:00.745489078 +0200
+@@ -995,3 +995,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/uk.yml redmine-1.2.0.maildomain/config/locales/uk.yml
+--- redmine-1.2.0.orig/config/locales/uk.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/uk.yml	2011-07-08 12:39:57.899489077 +0200
+@@ -972,3 +972,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/vi.yml redmine-1.2.0.maildomain/config/locales/vi.yml
+--- redmine-1.2.0.orig/config/locales/vi.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/vi.yml	2011-07-08 12:39:55.368489079 +0200
+@@ -1027,3 +1027,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/zh-TW.yml redmine-1.2.0.maildomain/config/locales/zh-TW.yml
+--- redmine-1.2.0.orig/config/locales/zh-TW.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/zh-TW.yml	2011-07-08 12:39:52.366489108 +0200
+@@ -1057,3 +1057,5 @@
+   enumeration_system_activity: 系統活動
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/config/locales/zh.yml redmine-1.2.0.maildomain/config/locales/zh.yml
+--- redmine-1.2.0.orig/config/locales/zh.yml	2011-05-30 18:51:21.000000000 +0200
++++ redmine-1.2.0.maildomain/config/locales/zh.yml	2011-07-08 12:39:48.095489080 +0200
+@@ -979,3 +979,5 @@
+   label_git_report_last_commit: Report last commit for files and directories
+   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
+   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
++
++  field_maildomain: E-mail domain
+diff -urN redmine-1.2.0.orig/db/migrate/001_setup.rb redmine-1.2.0.maildomain/db/migrate/001_setup.rb
+--- redmine-1.2.0.orig/db/migrate/001_setup.rb	2011-05-30 18:51:17.000000000 +0200
++++ redmine-1.2.0.maildomain/db/migrate/001_setup.rb	2011-07-08 12:39:01.726489091 +0200
 @@ -47,6 +47,7 @@
        t.column "attr_firstname", :string, :limit => 30
        t.column "attr_lastname", :string, :limit => 30
@@ -79,347 +475,3 @@ diff -ur redmine-0.9.3-mdomain/db/migrate/001_setup.rb /usr/share/redmine//db/mi
        t.column "onthefly_register", :boolean, :default => false, :null => false
      end
      
-diff -ur redmine-1.0.4-mdomain/config/locales/bg.yml redmine-1.0.4/config/locales/bg.yml
---- redmine-1.0.4-mdomain/config/locales/bg.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/bg.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -923,3 +923,4 @@
-   label_user_search: "Търсене на потребител:"
-   field_visible: Видим
-   setting_emails_header: Emails header
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/bs.yml redmine-1.0.4/config/locales/bs.yml
---- redmine-1.0.4-mdomain/config/locales/bs.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/bs.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -935,3 +935,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/ca.yml redmine-1.0.4/config/locales/ca.yml
---- redmine-1.0.4-mdomain/config/locales/ca.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/ca.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -923,3 +923,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/cs.yml redmine-1.0.4/config/locales/cs.yml
---- redmine-1.0.4-mdomain/config/locales/cs.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/cs.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -920,3 +920,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/da.yml redmine-1.0.4/config/locales/da.yml
---- redmine-1.0.4-mdomain/config/locales/da.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/da.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -937,3 +937,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/de.yml redmine-1.0.4/config/locales/de.yml
---- redmine-1.0.4-mdomain/config/locales/de.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/de.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -945,3 +945,4 @@
- 
-   field_start_date: Start date
-   button_edit_associated_wikipage: "Edit associated Wiki page: {{page_title}}"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/el.yml redmine-1.0.4/config/locales/el.yml
---- redmine-1.0.4-mdomain/config/locales/el.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/el.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -921,3 +921,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/en-GB.yml redmine-1.0.4/config/locales/en-GB.yml
---- redmine-1.0.4-mdomain/config/locales/en-GB.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/en-GB.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -925,3 +925,4 @@
-   notice_not_authorized_archived_project: The project you're trying to access has been archived.
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/en.yml redmine-1.0.4/config/locales/en.yml
---- redmine-1.0.4-mdomain/config/locales/en.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/en.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -920,3 +920,4 @@
-   enumeration_activities: Activities (time tracking)
-   enumeration_system_activity: System Activity
- 
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/es.yml redmine-1.0.4/config/locales/es.yml
---- redmine-1.0.4-mdomain/config/locales/es.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/es.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -967,3 +967,4 @@
-   label_user_search: "Buscar por usuario:"
-   field_visible: Visible
-   setting_emails_header: Encabezado de Correos
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/eu.yml redmine-1.0.4/config/locales/eu.yml
---- redmine-1.0.4-mdomain/config/locales/eu.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/eu.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -924,3 +924,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/fi.yml redmine-1.0.4/config/locales/fi.yml
---- redmine-1.0.4-mdomain/config/locales/fi.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/fi.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -945,3 +945,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/fr.yml redmine-1.0.4/config/locales/fr.yml
---- redmine-1.0.4-mdomain/config/locales/fr.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/fr.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -946,3 +946,4 @@
-   field_assigned_to_role: Rôle de l'assigné
- 
-   field_start_date: Start date
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/gl.yml redmine-1.0.4/config/locales/gl.yml
---- redmine-1.0.4-mdomain/config/locales/gl.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/gl.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -937,3 +937,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/he.yml redmine-1.0.4/config/locales/he.yml
---- redmine-1.0.4-mdomain/config/locales/he.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/he.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -933,3 +933,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/hr.yml redmine-1.0.4/config/locales/hr.yml
---- redmine-1.0.4-mdomain/config/locales/hr.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/hr.yml	2010-12-02 14:15:06.415818373 +0100
-@@ -927,3 +927,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/hu.yml redmine-1.0.4/config/locales/hu.yml
---- redmine-1.0.4-mdomain/config/locales/hu.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/hu.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -943,3 +943,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/id.yml redmine-1.0.4/config/locales/id.yml
---- redmine-1.0.4-mdomain/config/locales/id.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/id.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -928,3 +928,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/it.yml redmine-1.0.4/config/locales/it.yml
---- redmine-1.0.4-mdomain/config/locales/it.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/it.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -924,3 +924,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/ja.yml redmine-1.0.4/config/locales/ja.yml
---- redmine-1.0.4-mdomain/config/locales/ja.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/ja.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -955,3 +955,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/ko.yml redmine-1.0.4/config/locales/ko.yml
---- redmine-1.0.4-mdomain/config/locales/ko.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/ko.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -976,3 +976,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/lt.yml redmine-1.0.4/config/locales/lt.yml
---- redmine-1.0.4-mdomain/config/locales/lt.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/lt.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -984,3 +984,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/lv.yml redmine-1.0.4/config/locales/lv.yml
---- redmine-1.0.4-mdomain/config/locales/lv.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/lv.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -915,3 +915,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/mk.yml redmine-1.0.4/config/locales/mk.yml
---- redmine-1.0.4-mdomain/config/locales/mk.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/mk.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -920,3 +920,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/mn.yml redmine-1.0.4/config/locales/mn.yml
---- redmine-1.0.4-mdomain/config/locales/mn.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/mn.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -921,3 +921,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/nl.yml redmine-1.0.4/config/locales/nl.yml
---- redmine-1.0.4-mdomain/config/locales/nl.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/nl.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -902,3 +902,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/no.yml redmine-1.0.4/config/locales/no.yml
---- redmine-1.0.4-mdomain/config/locales/no.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/no.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -911,3 +911,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/pl.yml redmine-1.0.4/config/locales/pl.yml
---- redmine-1.0.4-mdomain/config/locales/pl.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/pl.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -941,3 +941,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/pt-BR.yml redmine-1.0.4/config/locales/pt-BR.yml
---- redmine-1.0.4-mdomain/config/locales/pt-BR.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/pt-BR.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -948,3 +948,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/pt.yml redmine-1.0.4/config/locales/pt.yml
---- redmine-1.0.4-mdomain/config/locales/pt.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/pt.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -928,3 +928,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/ro.yml redmine-1.0.4/config/locales/ro.yml
---- redmine-1.0.4-mdomain/config/locales/ro.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/ro.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -913,3 +913,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/ru.yml redmine-1.0.4/config/locales/ru.yml
---- redmine-1.0.4-mdomain/config/locales/ru.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/ru.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -1043,3 +1043,4 @@
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-   field_start_date: Start Date
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/sk.yml redmine-1.0.4/config/locales/sk.yml
---- redmine-1.0.4-mdomain/config/locales/sk.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/sk.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -915,3 +915,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/sl.yml redmine-1.0.4/config/locales/sl.yml
---- redmine-1.0.4-mdomain/config/locales/sl.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/sl.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -916,3 +916,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/sr.yml redmine-1.0.4/config/locales/sr.yml
---- redmine-1.0.4-mdomain/config/locales/sr.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/sr.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -921,3 +921,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/sr-YU.yml redmine-1.0.4/config/locales/sr-YU.yml
---- redmine-1.0.4-mdomain/config/locales/sr-YU.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/sr-YU.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -920,3 +920,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/sv.yml redmine-1.0.4/config/locales/sv.yml
---- redmine-1.0.4-mdomain/config/locales/sv.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/sv.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -975,3 +975,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/th.yml redmine-1.0.4/config/locales/th.yml
---- redmine-1.0.4-mdomain/config/locales/th.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/th.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -917,3 +917,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/tr.yml redmine-1.0.4/config/locales/tr.yml
---- redmine-1.0.4-mdomain/config/locales/tr.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/tr.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -943,3 +943,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/uk.yml redmine-1.0.4/config/locales/uk.yml
---- redmine-1.0.4-mdomain/config/locales/uk.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/uk.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -916,3 +916,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/vi.yml redmine-1.0.4/config/locales/vi.yml
---- redmine-1.0.4-mdomain/config/locales/vi.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/vi.yml	2010-12-02 14:15:06.416818373 +0100
-@@ -975,3 +975,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/zh-TW.yml redmine-1.0.4/config/locales/zh-TW.yml
---- redmine-1.0.4-mdomain/config/locales/zh-TW.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/zh-TW.yml	2010-12-02 14:15:06.417818373 +0100
-@@ -1013,3 +1013,4 @@
-   enumeration_activities: 活動 (時間追蹤)
-   enumeration_system_activity: 系統活動
- 
-+  field_maildomain: Email domain
-diff -ur redmine-1.0.4-mdomain/config/locales/zh.yml redmine-1.0.4/config/locales/zh.yml
---- redmine-1.0.4-mdomain/config/locales/zh.yml	2010-12-02 14:14:26.000000000 +0100
-+++ redmine-1.0.4/config/locales/zh.yml	2010-12-02 14:15:06.417818373 +0100
-@@ -938,3 +938,4 @@
-   field_start_date: Start date
-   label_principal_search: "Search for user or group:"
-   label_user_search: "Search for user:"
-+  field_maildomain: Email domain
