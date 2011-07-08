@@ -205,8 +205,8 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc README.rdoc doc/* public/dispatch.*.example config/*.example
-%doc extra/sample_plugin
+%doc README.rdoc doc/* public/*.example config/*.example
+%doc extra/sample_plugin extra/svn/create_views.sql
 %dir %attr(750,root,http) %{_sysconfdir}
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/httpd.conf
 %dir %attr(755,redmine,root) %{_sysconfdir}/config
