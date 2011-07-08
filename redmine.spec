@@ -5,14 +5,12 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
-Version:	1.0.4
-Release:	2
+Version:	1.2.0
+Release:	0.1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://rubyforge.org/frs/download.php/73457/%{name}-%{version}.tar.gz
-# Source0-md5:	a30a5fc39b1a07dfe6751666417d6538
-Source1:	%{name}-rfpdf.tar.bz2
-# Source1-md5:	83da153b550237f47a3a3c1c2acaac20
+Source0:	http://rubyforge.org/frs/download.php/74944/%{name}-%{version}.tar.gz
+# Source0-md5:	9d9809a6137c75f754a7fb6c0acc1d6c
 Source2:	%{name}.conf
 # Shove UTF-8 down rails throat, needed for rails < 3
 Source3:	%{name}-fix_params.rb
@@ -24,7 +22,6 @@ Patch2:		%{name}-utf-regex.patch
 Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
 Patch5:		%{name}-csv-utf.patch
-Patch6:		%{name}-rfpdf.patch
 Patch7:		%{name}-mercurial.patch
 Patch8:		%{name}-gantt.patch
 Patch9:		%{name}-git-parse.patch
@@ -40,7 +37,7 @@ Requires:	apache(mod_rails)
 Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay
-Requires:	ruby-rails2 >= 2.3.5
+Requires:	ruby-rails2 = 2.3.11
 Requires:	ruby-rake
 Requires:	ruby-rubytree
 Requires:	webapps
@@ -113,14 +110,10 @@ Test suite for Redmine.
 %prep
 %setup -q
 
-rm -r vendor/gems
-rm -r vendor/plugins/ruby-net-ldap*
-rm -r vendor/plugins/coderay*
-rm -r vendor/rails
-
-# Replace rfpdf plugin with something that groks UTF
-rm -r vendor/plugins/rfpdf
-%{__tar} xf %{SOURCE1} -C vendor/plugins/
+%{__rm} -r vendor/gems
+%{__rm} -r vendor/plugins/ruby-net-ldap*
+%{__rm} -r vendor/plugins/coderay*
+%{__rm} -r vendor/rails
 
 find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 
@@ -130,7 +123,6 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
-%patch6 -p1
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
@@ -182,8 +174,8 @@ ln -s /var/lib/%{name}/plugin_assets $RPM_BUILD_ROOT%{_datadir}/%{name}/public
 
 install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/httpd.conf
 
-rm $RPM_BUILD_ROOT%{_sysconfdir}/config/*.example
-rm $RPM_BUILD_ROOT%{_datadir}/%{name}/public/*.example
+%{__rm} $RPM_BUILD_ROOT%{_sysconfdir}/config/*.example
+%{__rm} $RPM_BUILD_ROOT%{_datadir}/%{name}/public/*.example
 
 %{__sed} -i -e 's,^RAILS_ROOT = .*,RAILS_ROOT = "%{_datadir}/%{name}",' $RPM_BUILD_ROOT%{_sysconfdir}/config/boot.rb
 
