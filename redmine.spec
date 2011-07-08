@@ -22,8 +22,9 @@ Patch2:		%{name}-utf-regex.patch
 Patch3:		%{name}-nogems.patch
 Patch4:		%{name}-maildomain.patch
 Patch5:		%{name}-csv-utf.patch
-Patch8:		%{name}-gantt.patch
-Patch9:		%{name}-git-parse.patch
+Patch6:		%{name}-gantt.patch
+Patch7:		%{name}-git-parse.patch
+Patch8:		%{name}-tmail.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	perl-base
@@ -36,6 +37,7 @@ Requires:	apache(mod_rails)
 Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay >= 0.9.7
+Requires:	ruby-i18n >= 0.4.2
 Requires:	ruby-rails2 = 2.3.11
 Requires:	ruby-rake
 Requires:	ruby-rubytree >= 0.5.2
@@ -121,8 +123,9 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch3 -p1
 %patch4 -p1
 %patch5 -p1
+%patch6 -p1
+%patch7 -p1
 %patch8 -p1
-%patch9 -p1
 
 find -type f -print0 | \
 	xargs -0 %{__sed} -i -e 's,/usr/bin/env ruby,%{__ruby},' \
