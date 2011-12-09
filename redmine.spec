@@ -1,13 +1,12 @@
 # TODO:
 #	- other operation modes: rails/webrick, mongrel?\
-#	- compat with ruby 1.9.3 (unescaped % and \ in translations)
 #
 # for reposman
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	1.2.2
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/75518/%{name}-%{version}.tar.gz
