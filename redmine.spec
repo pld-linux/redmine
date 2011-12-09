@@ -130,7 +130,7 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 
 # ruby 1.9.3 became very strict about escaping
 %{__sed} -i  -e 's/\([^\]\+\):\\\([^\]\+\)/\1:\\\\\2/g' \
-	     -e 's/^\([^:]\+:\s*\)\([^"'']*\)%\(.*\)$/\1"\2%\3"/g' \
+	     -e 's/^\([^:]\+:\s*\)\([^"]*\)%\([^"]*\)$/\1"\2%\3"/g' \
 	     config/locales/*.yml
 
 find -type f -print0 | \
