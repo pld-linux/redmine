@@ -1,5 +1,6 @@
 # TODO:
-#	- other operation modes: rails/webrick, mongrel?
+#	- other operation modes: rails/webrick, mongrel?\
+#	- compat with ruby 1.9.3 (unescaped % and \ in translations)
 #
 # for reposman
 %include	/usr/lib/rpm/macros.perl
