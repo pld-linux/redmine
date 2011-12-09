@@ -5,12 +5,12 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
-Version:	1.2.0
+Version:	1.2.2
 Release:	0.1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://rubyforge.org/frs/download.php/74944/%{name}-%{version}.tar.gz
-# Source0-md5:	9d9809a6137c75f754a7fb6c0acc1d6c
+Source0:	http://rubyforge.org/frs/download.php/75518/%{name}-%{version}.tar.gz
+# Source0-md5:	7d79a97cba8b29f7367e67b9bba72008
 Source2:	%{name}.conf
 # Shove UTF-8 down rails throat, needed for rails < 3
 Source3:	%{name}-fix_params.rb

@@ -117,9 +117,9 @@ diff -urN redmine-1.2.0.orig/config/locales/de.yml redmine-1.2.0.maildomain/conf
 --- redmine-1.2.0.orig/config/locales/de.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/de.yml	2011-07-08 12:41:13.855489061 +0200
 @@ -993,3 +993,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+   text_scm_config: Die SCM-Kommandos können in der in config/configuration.yml konfiguriert werden. Redmine muss anschließend neu gestartet werden.
+   text_scm_command_not_available: Scm Kommando ist nicht verfügbar. Bitte prüfen Sie die Einstellungen im Administrationspanel.
+ 
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/el.yml redmine-1.2.0.maildomain/config/locales/el.yml
@@ -153,9 +153,9 @@ diff -urN redmine-1.2.0.orig/config/locales/es.yml redmine-1.2.0.maildomain/conf
 --- redmine-1.2.0.orig/config/locales/es.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/es.yml	2011-07-08 12:41:00.758489063 +0200
 @@ -1013,3 +1013,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+   label_git_report_last_commit: Informar del último commit para ficheros y directorios
+   text_scm_config: Puede configurar las órdenes de cada scm en configuration/configuration.yml. Por favor, reinicie la aplicación después de editarlo
+   text_scm_command_not_available: La orden para el Scm no está disponible. Por favor, compruebe la configuración en el panel de administración.
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/eu.yml redmine-1.2.0.maildomain/config/locales/eu.yml
@@ -243,9 +243,9 @@ diff -urN redmine-1.2.0.orig/config/locales/it.yml redmine-1.2.0.maildomain/conf
 --- redmine-1.2.0.orig/config/locales/it.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/it.yml	2011-07-08 12:40:40.568489069 +0200
 @@ -977,3 +977,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+   label_git_report_last_commit: Riporta l'ultimo commit per files e directories
+   text_scm_config: Puoi configurare i comandi scm nel file config/configuration.yml. E' necessario riavviare l'applicazione dopo averlo modificato.
+   text_scm_command_not_available: Il comando scm non è disponibile. Controllare le impostazioni nel pannello di amministrazione.
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/ja.yml redmine-1.2.0.maildomain/config/locales/ja.yml
@@ -315,9 +315,9 @@ diff -urN redmine-1.2.0.orig/config/locales/no.yml redmine-1.2.0.maildomain/conf
 --- redmine-1.2.0.orig/config/locales/no.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/no.yml	2011-07-08 12:40:26.191489070 +0200
 @@ -963,3 +963,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+ 
+   text_git_repository_note: Depot er bart og lokalt (f.eks. /gitrepo, c:\gitrepo)
+ 
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/pl.yml redmine-1.2.0.maildomain/config/locales/pl.yml
@@ -333,9 +333,9 @@ diff -urN redmine-1.2.0.orig/config/locales/pt-BR.yml redmine-1.2.0.maildomain/c
 --- redmine-1.2.0.orig/config/locales/pt-BR.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/pt-BR.yml	2011-07-08 12:40:22.525489072 +0200
 @@ -996,3 +996,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+   label_git_report_last_commit: Relatar última alteração para arquivos e diretórios
+   text_scm_config: Você pode configurar seus comandos de versionamento em config/configurations.yml. Por favor reinicie a aplicação após alterá-lo.
+   text_scm_command_not_available: Comando de versionamento não disponível. Por favor verifique as configurações no painel de administração.
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/pt.yml redmine-1.2.0.maildomain/config/locales/pt.yml
@@ -378,9 +378,9 @@ diff -urN redmine-1.2.0.orig/config/locales/sl.yml redmine-1.2.0.maildomain/conf
 --- redmine-1.2.0.orig/config/locales/sl.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/sl.yml	2011-07-08 12:40:12.215489075 +0200
 @@ -972,3 +972,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+ 
+   text_git_repository_note: Shramba je prazna in lokalna (npr. /gitrepo, c:\gitrepo)
+ 
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/sr.yml redmine-1.2.0.maildomain/config/locales/sr.yml
@@ -405,9 +405,9 @@ diff -urN redmine-1.2.0.orig/config/locales/sv.yml redmine-1.2.0.maildomain/conf
 --- redmine-1.2.0.orig/config/locales/sv.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/sv.yml	2011-07-08 12:40:05.627489076 +0200
 @@ -1017,3 +1017,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
+   enumeration_doc_categories: Dokumentkategorier
+   enumeration_activities: Aktiviteter (tidsuppföljning)
+   enumeration_system_activity: Systemaktivitet
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/th.yml redmine-1.2.0.maildomain/config/locales/th.yml
@@ -450,9 +450,9 @@ diff -urN redmine-1.2.0.orig/config/locales/zh-TW.yml redmine-1.2.0.maildomain/c
 --- redmine-1.2.0.orig/config/locales/zh-TW.yml	2011-05-30 18:51:21.000000000 +0200
 +++ redmine-1.2.0.maildomain/config/locales/zh-TW.yml	2011-07-08 12:39:52.366489108 +0200
 @@ -1057,3 +1057,5 @@
+   enumeration_doc_categories: 文件分類
+   enumeration_activities: 活動 (時間追蹤)
    enumeration_system_activity: 系統活動
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
 +
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.2.0.orig/config/locales/zh.yml redmine-1.2.0.maildomain/config/locales/zh.yml

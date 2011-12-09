@@ -70,15 +70,15 @@ diff -ur redmine-1.2.0.orig/app/helpers/application_helper.rb redmine-1.2.0/app/
        leading, esc, project_prefix, project_identifier, prefix, sep, identifier = $1, $2, $3, $4, $5, $7 || $9, $8 || $10
        link = nil
        if project_identifier
-@@ -703,7 +703,7 @@
-     text.gsub!(HEADING_RE) do
-       level, attrs, content = $1.to_i, $2, $3
-       item = strip_tags(content).strip
--      anchor = item.gsub(%r{[^\w\s\-]}, '').gsub(%r{\s+(\-+\s*)?}, '-')
-+      anchor = item.gsub(%r{[^[:word:][:space:]\-]}, '').gsub(%r{[:space:]+(\-+[:space:]*)?}, '-')
-       @parsed_headings << [level, anchor, item]
-       "<a name=\"#{anchor}\"></a>\n<h#{level} #{attrs}>#{content}<a href=\"##{anchor}\" class=\"wiki-anchor\">&para;</a></h#{level}>"
-     end
+@@ -895,7 +895,7 @@
+   end
+ 
+   def sanitize_anchor_name(anchor)
+-    anchor.gsub(%r{[^\w\s\-]}, '').gsub(%r{\s+(\-+\s*)?}, '-')
++    anchor.gsub(%r{[^[:word:][:space:]\-]}, '').gsub(%r{[:space:]+(\-+[:space:]*)?}, '-')
+   end
+ 
+   # Returns the javascript tags that are included in the html layout head
 diff -ur redmine-1.2.0.orig/app/models/attachment.rb redmine-1.2.0/app/models/attachment.rb
 --- redmine-1.2.0.orig/app/models/attachment.rb	2011-05-30 18:51:16.000000000 +0200
 +++ redmine-1.2.0/app/models/attachment.rb	2011-07-08 12:34:32.404489152 +0200
