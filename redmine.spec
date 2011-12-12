@@ -24,6 +24,7 @@ Patch4:		%{name}-maildomain.patch
 Patch5:		%{name}-gantt.patch
 Patch6:		%{name}-git-parse.patch
 Patch7:		%{name}-tmail.patch
+Patch8:		%{name}-utf8.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	perl-base
@@ -124,6 +125,7 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 
 # ruby 1.9.3 became very strict about escaping
 %{__sed} -i  -e 's/\([^\]\+\):\\\([^\]\+\)/\1:\\\\\2/g' \
