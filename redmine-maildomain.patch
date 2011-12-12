@@ -1,24 +1,24 @@
-diff -urN redmine-1.2.0.orig/app/models/auth_source_ldap.rb redmine-1.2.0.maildomain/app/models/auth_source_ldap.rb
---- redmine-1.2.0.orig/app/models/auth_source_ldap.rb	2011-05-30 18:51:16.000000000 +0200
-+++ redmine-1.2.0.maildomain/app/models/auth_source_ldap.rb	2011-07-08 12:38:04.309489104 +0200
-@@ -23,6 +23,7 @@
+diff -urN redmine-1.3.0.orig/app/models/auth_source_ldap.rb redmine-1.3.0/app/models/auth_source_ldap.rb
+--- redmine-1.3.0.orig/app/models/auth_source_ldap.rb	2011-12-12 13:02:17.142366702 +0100
++++ redmine-1.3.0/app/models/auth_source_ldap.rb	2011-12-12 13:02:36.082367556 +0100
+@@ -28,6 +28,7 @@
    validates_length_of :name, :host, :maximum => 60, :allow_nil => true
    validates_length_of :account, :account_password, :base_dn, :maximum => 255, :allow_nil => true
    validates_length_of :attr_login, :attr_firstname, :attr_lastname, :attr_mail, :maximum => 30, :allow_nil => true
 +  validates_length_of :maildomain, :maximum => 255, :allow_nil => true
    validates_numericality_of :port, :only_integer => true
-   
+ 
    before_validation :strip_ldap_attributes
-@@ -58,7 +59,7 @@
+@@ -63,7 +64,7 @@
    private
-   
+ 
    def strip_ldap_attributes
 -    [:attr_login, :attr_firstname, :attr_lastname, :attr_mail].each do |attr|
 +    [:attr_login, :attr_firstname, :attr_lastname, :attr_mail, :maildomain].each do |attr|
        write_attribute(attr, read_attribute(attr).strip) unless read_attribute(attr).nil?
      end
    end
-@@ -72,12 +73,12 @@
+@@ -77,12 +78,12 @@
      Net::LDAP.new options
    end
  
@@ -33,7 +33,7 @@ diff -urN redmine-1.2.0.orig/app/models/auth_source_ldap.rb redmine-1.2.0.maildo
       :auth_source_id => self.id
      }
    end
-@@ -111,7 +112,7 @@
+@@ -116,7 +117,7 @@
                       :attributes=> search_attributes) do |entry|
  
        if onthefly_register?
@@ -42,8 +42,8 @@ diff -urN redmine-1.2.0.orig/app/models/auth_source_ldap.rb redmine-1.2.0.maildo
        else
          attrs = {:dn => entry.dn}
        end
-@@ -127,4 +128,12 @@
-       entry[attr_name].is_a?(Array) ? entry[attr_name].first : entry[attr_name]
+@@ -138,4 +139,12 @@
+       val
      end
    end
 +
@@ -55,9 +55,27 @@ diff -urN redmine-1.2.0.orig/app/models/auth_source_ldap.rb redmine-1.2.0.maildo
 +    addr
 +  end
  end
-diff -urN redmine-1.2.0.orig/app/views/auth_sources/_form.html.erb redmine-1.2.0.maildomain/app/views/auth_sources/_form.html.erb
---- redmine-1.2.0.orig/app/views/auth_sources/_form.html.erb	2011-05-30 18:51:16.000000000 +0200
-+++ redmine-1.2.0.maildomain/app/views/auth_sources/_form.html.erb	2011-07-08 12:38:33.934489097 +0200
+diff -urN redmine-1.3.0.orig/app/models/auth_source_ldap.rb.orig redmine-1.3.0/app/models/auth_source_ldap.rb.orig
+--- redmine-1.3.0.orig/app/models/auth_source_ldap.rb.orig	2011-12-12 13:02:17.135700035 +0100
++++ redmine-1.3.0/app/models/auth_source_ldap.rb.orig	2011-12-12 13:02:36.072367556 +0100
+@@ -129,7 +129,13 @@
+ 
+   def self.get_attr(entry, attr_name)
+     if !attr_name.blank?
+-      entry[attr_name].is_a?(Array) ? entry[attr_name].first : entry[attr_name]
++      if entry[attr_name].is_a?(Array) 
++	 val = entry[attr_name].first
++      else
++	 val = entry[attr_name]
++      end
++      val.force_encoding(Encoding::UTF_8) if val.respond_to?(:force_encoding)
++      val
+     end
+   end
+ end
+diff -urN redmine-1.3.0.orig/app/views/auth_sources/_form.html.erb redmine-1.3.0/app/views/auth_sources/_form.html.erb
+--- redmine-1.3.0.orig/app/views/auth_sources/_form.html.erb	2011-12-10 15:53:33.000000000 +0100
++++ redmine-1.3.0/app/views/auth_sources/_form.html.erb	2011-12-12 13:02:36.082367556 +0100
 @@ -7,6 +7,9 @@
  
  <p><label for="auth_source_onthefly_register"><%=l(:field_onthefly)%></label>
@@ -68,405 +86,361 @@ diff -urN redmine-1.2.0.orig/app/views/auth_sources/_form.html.erb redmine-1.2.0
  </div>
  
  <!--[eoform:auth_source]-->
-diff -urN redmine-1.2.0.orig/config/locales/bg.yml redmine-1.2.0.maildomain/config/locales/bg.yml
---- redmine-1.2.0.orig/config/locales/bg.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/bg.yml	2011-07-08 12:39:42.282489080 +0200
-@@ -975,3 +975,5 @@
-   enumeration_doc_categories: Категории документи
-   enumeration_activities: Дейности (time tracking)
-   enumeration_system_activity: Системна активност
-+
+diff -urN redmine-1.3.0.orig/config/locales/bg.yml redmine-1.3.0/config/locales/bg.yml
+--- redmine-1.3.0.orig/config/locales/bg.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/bg.yml	2011-12-12 13:03:00.009035303 +0100
+@@ -1004,3 +1004,4 @@
+   description_date_range_interval: Изберете диапазон чрез задаване на начална и крайна дати
+   description_date_from: Въведете начална дата
+   description_date_to: Въведете крайна дата
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/bs.yml redmine-1.2.0.maildomain/config/locales/bs.yml
---- redmine-1.2.0.orig/config/locales/bs.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/bs.yml	2011-07-08 12:41:21.844489058 +0200
-@@ -990,3 +990,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/bs.yml redmine-1.3.0/config/locales/bs.yml
+--- redmine-1.3.0.orig/config/locales/bs.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/bs.yml	2011-12-12 13:03:04.872368856 +0100
+@@ -1020,3 +1020,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/ca.yml redmine-1.2.0.maildomain/config/locales/ca.yml
---- redmine-1.2.0.orig/config/locales/ca.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/ca.yml	2011-07-08 12:41:19.981489063 +0200
-@@ -979,3 +979,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/ca.yml redmine-1.3.0/config/locales/ca.yml
+--- redmine-1.3.0.orig/config/locales/ca.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/ca.yml	2011-12-12 13:03:11.072369135 +0100
+@@ -1009,3 +1009,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/cs.yml redmine-1.2.0.maildomain/config/locales/cs.yml
---- redmine-1.2.0.orig/config/locales/cs.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/cs.yml	2011-07-08 12:41:18.208489060 +0200
-@@ -980,3 +980,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/cs.yml redmine-1.3.0/config/locales/cs.yml
+--- redmine-1.3.0.orig/config/locales/cs.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/cs.yml	2011-12-12 13:03:15.142369319 +0100
+@@ -1010,3 +1010,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/da.yml redmine-1.2.0.maildomain/config/locales/da.yml
---- redmine-1.2.0.orig/config/locales/da.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/da.yml	2011-07-08 12:41:15.840489059 +0200
-@@ -993,3 +993,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/da.yml redmine-1.3.0/config/locales/da.yml
+--- redmine-1.3.0.orig/config/locales/da.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/da.yml	2011-12-12 13:03:19.045702828 +0100
+@@ -1023,3 +1023,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/de.yml redmine-1.2.0.maildomain/config/locales/de.yml
---- redmine-1.2.0.orig/config/locales/de.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/de.yml	2011-07-08 12:41:13.855489061 +0200
-@@ -993,3 +993,5 @@
-   text_scm_config: Die SCM-Kommandos können in der in config/configuration.yml konfiguriert werden. Redmine muss anschließend neu gestartet werden.
-   text_scm_command_not_available: Scm Kommando ist nicht verfügbar. Bitte prüfen Sie die Einstellungen im Administrationspanel.
- 
-+
+diff -urN redmine-1.3.0.orig/config/locales/de.yml redmine-1.3.0/config/locales/de.yml
+--- redmine-1.3.0.orig/config/locales/de.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/de.yml	2011-12-12 13:03:23.092369677 +0100
+@@ -1027,3 +1027,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/el.yml redmine-1.2.0.maildomain/config/locales/el.yml
---- redmine-1.2.0.orig/config/locales/el.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/el.yml	2011-07-08 12:41:08.490489063 +0200
-@@ -976,3 +976,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/el.yml redmine-1.3.0/config/locales/el.yml
+--- redmine-1.3.0.orig/config/locales/el.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/el.yml	2011-12-12 13:03:35.575703574 +0100
+@@ -1006,3 +1006,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/en-GB.yml redmine-1.2.0.maildomain/config/locales/en-GB.yml
---- redmine-1.2.0.orig/config/locales/en-GB.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/en-GB.yml	2011-07-08 12:41:06.572489057 +0200
-@@ -979,3 +979,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/en-GB.yml redmine-1.3.0/config/locales/en-GB.yml
+--- redmine-1.3.0.orig/config/locales/en-GB.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/en-GB.yml	2011-12-12 13:03:39.449037082 +0100
+@@ -1009,3 +1009,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/en.yml redmine-1.2.0.maildomain/config/locales/en.yml
---- redmine-1.2.0.orig/config/locales/en.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/en.yml	2011-07-08 12:41:02.602489063 +0200
-@@ -975,3 +975,5 @@
-   enumeration_doc_categories: Document categories
-   enumeration_activities: Activities (time tracking)
-   enumeration_system_activity: System Activity
-+
+diff -urN redmine-1.3.0.orig/config/locales/en.yml redmine-1.3.0/config/locales/en.yml
+--- redmine-1.3.0.orig/config/locales/en.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/en.yml	2011-12-12 13:03:43.162370583 +0100
+@@ -1004,3 +1004,4 @@
+   description_date_range_interval: Choose range by selecting start and end date
+   description_date_from: Enter start date
+   description_date_to: Enter end date
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/es.yml redmine-1.2.0.maildomain/config/locales/es.yml
---- redmine-1.2.0.orig/config/locales/es.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/es.yml	2011-07-08 12:41:00.758489063 +0200
-@@ -1013,3 +1013,5 @@
-   label_git_report_last_commit: Informar del último commit para ficheros y directorios
-   text_scm_config: Puede configurar las órdenes de cada scm en configuration/configuration.yml. Por favor, reinicie la aplicación después de editarlo
-   text_scm_command_not_available: La orden para el Scm no está disponible. Por favor, compruebe la configuración en el panel de administración.
-+
+diff -urN redmine-1.3.0.orig/config/locales/es.yml redmine-1.3.0/config/locales/es.yml
+--- redmine-1.3.0.orig/config/locales/es.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/es.yml	2011-12-12 13:03:46.585704071 +0100
+@@ -1043,3 +1043,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/eu.yml redmine-1.2.0.maildomain/config/locales/eu.yml
---- redmine-1.2.0.orig/config/locales/eu.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/eu.yml	2011-07-08 12:40:59.067489063 +0200
-@@ -980,3 +980,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/eu.yml redmine-1.3.0/config/locales/eu.yml
+--- redmine-1.3.0.orig/config/locales/eu.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/eu.yml	2011-12-12 13:03:49.035704182 +0100
+@@ -1010,3 +1010,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/fa.yml redmine-1.2.0.maildomain/config/locales/fa.yml
---- redmine-1.2.0.orig/config/locales/fa.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/fa.yml	2011-07-08 12:40:57.350489062 +0200
-@@ -979,3 +979,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/fa.yml redmine-1.3.0/config/locales/fa.yml
+--- redmine-1.3.0.orig/config/locales/fa.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/fa.yml	2011-12-12 13:03:51.575704295 +0100
+@@ -1009,3 +1009,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/fi.yml redmine-1.2.0.maildomain/config/locales/fi.yml
---- redmine-1.2.0.orig/config/locales/fi.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/fi.yml	2011-07-08 12:40:54.532489064 +0200
-@@ -997,3 +997,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/fi.yml redmine-1.3.0/config/locales/fi.yml
+--- redmine-1.3.0.orig/config/locales/fi.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/fi.yml	2011-12-12 13:03:54.135704412 +0100
+@@ -1027,3 +1027,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/fr.yml redmine-1.2.0.maildomain/config/locales/fr.yml
---- redmine-1.2.0.orig/config/locales/fr.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/fr.yml	2011-07-08 12:40:52.750489064 +0200
-@@ -991,3 +991,5 @@
-   label_git_report_last_commit: Afficher le dernier commit des fichiers et répertoires
-   text_scm_config: Vous pouvez configurer les commandes des SCM dans config/configuration.yml. Redémarrer l'application après modification.
-   text_scm_command_not_available: Ce SCM n'est pas disponible. Vérifier les paramètres dans la section administration.
-+
+diff -urN redmine-1.3.0.orig/config/locales/fr.yml redmine-1.3.0/config/locales/fr.yml
+--- redmine-1.3.0.orig/config/locales/fr.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/fr.yml	2011-12-12 13:03:58.679037949 +0100
+@@ -1021,3 +1021,4 @@
+   label_child_revision: Enfant
+   error_scm_annotate_big_text_file: Cette entrée ne peut pas être annotée car elle excède la taille maximale.
+   setting_repositories_encodings: Encodages des fichiers et des dépôts
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/gl.yml redmine-1.2.0.maildomain/config/locales/gl.yml
---- redmine-1.2.0.orig/config/locales/gl.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/gl.yml	2011-07-08 12:40:51.005489066 +0200
-@@ -988,3 +988,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/gl.yml redmine-1.3.0/config/locales/gl.yml
+--- redmine-1.3.0.orig/config/locales/gl.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/gl.yml	2011-12-12 13:04:00.985704721 +0100
+@@ -1018,3 +1018,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/he.yml redmine-1.2.0.maildomain/config/locales/he.yml
---- redmine-1.2.0.orig/config/locales/he.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/he.yml	2011-07-08 12:40:49.275489066 +0200
-@@ -981,3 +981,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/he.yml redmine-1.3.0/config/locales/he.yml
+--- redmine-1.3.0.orig/config/locales/he.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/he.yml	2011-12-12 13:04:03.629038173 +0100
+@@ -1011,3 +1011,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/hr.yml redmine-1.2.0.maildomain/config/locales/hr.yml
---- redmine-1.2.0.orig/config/locales/hr.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/hr.yml	2011-07-08 12:40:47.590489065 +0200
-@@ -983,3 +983,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/hr.yml redmine-1.3.0/config/locales/hr.yml
+--- redmine-1.3.0.orig/config/locales/hr.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/hr.yml	2011-12-12 13:04:05.972371612 +0100
+@@ -1013,3 +1013,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/hu.yml redmine-1.2.0.maildomain/config/locales/hu.yml
---- redmine-1.2.0.orig/config/locales/hu.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/hu.yml	2011-07-08 12:40:45.845489066 +0200
-@@ -995,3 +995,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/hu.yml redmine-1.3.0/config/locales/hu.yml
+--- redmine-1.3.0.orig/config/locales/hu.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/hu.yml	2011-12-12 13:04:08.309038384 +0100
+@@ -1025,3 +1025,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/id.yml redmine-1.2.0.maildomain/config/locales/id.yml
---- redmine-1.2.0.orig/config/locales/id.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/id.yml	2011-07-08 12:40:42.787489067 +0200
-@@ -984,3 +984,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/id.yml redmine-1.3.0/config/locales/id.yml
+--- redmine-1.3.0.orig/config/locales/id.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/id.yml	2011-12-12 13:04:11.135705177 +0100
+@@ -1014,3 +1014,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/it.yml redmine-1.2.0.maildomain/config/locales/it.yml
---- redmine-1.2.0.orig/config/locales/it.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/it.yml	2011-07-08 12:40:40.568489069 +0200
-@@ -977,3 +977,5 @@
-   label_git_report_last_commit: Riporta l'ultimo commit per files e directories
-   text_scm_config: Puoi configurare i comandi scm nel file config/configuration.yml. E' necessario riavviare l'applicazione dopo averlo modificato.
-   text_scm_command_not_available: Il comando scm non è disponibile. Controllare le impostazioni nel pannello di amministrazione.
-+
+diff -urN redmine-1.3.0.orig/config/locales/it.yml redmine-1.3.0/config/locales/it.yml
+--- redmine-1.3.0.orig/config/locales/it.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/it.yml	2011-12-12 13:04:14.775705343 +0100
+@@ -1007,3 +1007,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/ja.yml redmine-1.2.0.maildomain/config/locales/ja.yml
---- redmine-1.2.0.orig/config/locales/ja.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/ja.yml	2011-07-08 12:40:38.810489071 +0200
-@@ -998,3 +998,5 @@
-   permission_set_issues_private: チケットをプライベートに設定
-   label_issues_visibility_public: プライベートチケット以外
-   text_issues_destroy_descendants_confirmation: %{count}個の子チケットも削除されます。
-+
+diff -urN redmine-1.3.0.orig/config/locales/ja.yml redmine-1.3.0/config/locales/ja.yml
+--- redmine-1.3.0.orig/config/locales/ja.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/ja.yml	2011-12-12 13:04:16.935705438 +0100
+@@ -1036,3 +1036,4 @@
+   button_export: エクスポート
+   label_export_options: "%{export_format} エクスポート設定"
+   error_attachment_too_big: このファイルはアップロードできません。添付ファイルサイズの上限(%{max_size})を超えています。
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/ko.yml redmine-1.2.0.maildomain/config/locales/ko.yml
---- redmine-1.2.0.orig/config/locales/ko.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/ko.yml	2011-07-08 12:40:37.073489063 +0200
-@@ -1028,3 +1028,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/ko.yml redmine-1.3.0/config/locales/ko.yml
+--- redmine-1.3.0.orig/config/locales/ko.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/ko.yml	2011-12-12 13:04:19.082372203 +0100
+@@ -1058,3 +1058,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/lt.yml redmine-1.2.0.maildomain/config/locales/lt.yml
---- redmine-1.2.0.orig/config/locales/lt.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/lt.yml	2011-07-08 12:40:35.137489069 +0200
-@@ -1036,3 +1036,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/lt.yml redmine-1.3.0/config/locales/lt.yml
+--- redmine-1.3.0.orig/config/locales/lt.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/lt.yml	2011-12-12 13:04:21.155705630 +0100
+@@ -1066,3 +1066,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/lv.yml redmine-1.2.0.maildomain/config/locales/lv.yml
---- redmine-1.2.0.orig/config/locales/lv.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/lv.yml	2011-07-08 12:40:33.343489070 +0200
-@@ -971,3 +971,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/lv.yml redmine-1.3.0/config/locales/lv.yml
+--- redmine-1.3.0.orig/config/locales/lv.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/lv.yml	2011-12-12 13:04:23.119039053 +0100
+@@ -1001,3 +1001,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/mk.yml redmine-1.2.0.maildomain/config/locales/mk.yml
---- redmine-1.2.0.orig/config/locales/mk.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/mk.yml	2011-07-08 12:40:31.587489069 +0200
-@@ -976,3 +976,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/mk.yml redmine-1.3.0/config/locales/mk.yml
+--- redmine-1.3.0.orig/config/locales/mk.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/mk.yml	2011-12-12 13:04:26.462372536 +0100
+@@ -1006,3 +1006,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/mn.yml redmine-1.2.0.maildomain/config/locales/mn.yml
---- redmine-1.2.0.orig/config/locales/mn.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/mn.yml	2011-07-08 12:40:29.854489070 +0200
-@@ -977,3 +977,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/mn.yml redmine-1.3.0/config/locales/mn.yml
+--- redmine-1.3.0.orig/config/locales/mn.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/mn.yml	2011-12-12 13:04:28.502372629 +0100
+@@ -1007,3 +1007,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/nl.yml redmine-1.2.0.maildomain/config/locales/nl.yml
---- redmine-1.2.0.orig/config/locales/nl.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/nl.yml	2011-07-08 12:40:28.077489074 +0200
-@@ -958,3 +958,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/nl.yml redmine-1.3.0/config/locales/nl.yml
+--- redmine-1.3.0.orig/config/locales/nl.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/nl.yml	2011-12-12 13:04:30.455706050 +0100
+@@ -988,3 +988,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/no.yml redmine-1.2.0.maildomain/config/locales/no.yml
---- redmine-1.2.0.orig/config/locales/no.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/no.yml	2011-07-08 12:40:26.191489070 +0200
-@@ -963,3 +963,5 @@
- 
-   text_git_repository_note: Depot er bart og lokalt (f.eks. /gitrepo, c:\gitrepo)
- 
-+
+diff -urN redmine-1.3.0.orig/config/locales/no.yml redmine-1.3.0/config/locales/no.yml
+--- redmine-1.3.0.orig/config/locales/no.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/no.yml	2011-12-12 13:04:33.045706168 +0100
+@@ -996,3 +996,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/pl.yml redmine-1.2.0.maildomain/config/locales/pl.yml
---- redmine-1.2.0.orig/config/locales/pl.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/pl.yml	2011-07-08 12:40:24.365489071 +0200
-@@ -993,3 +993,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/pl.yml redmine-1.3.0/config/locales/pl.yml
+--- redmine-1.3.0.orig/config/locales/pl.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/pl.yml	2011-12-12 13:04:35.305706269 +0100
+@@ -1023,3 +1023,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/pt-BR.yml redmine-1.2.0.maildomain/config/locales/pt-BR.yml
---- redmine-1.2.0.orig/config/locales/pt-BR.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/pt-BR.yml	2011-07-08 12:40:22.525489072 +0200
-@@ -996,3 +996,5 @@
-   label_git_report_last_commit: Relatar última alteração para arquivos e diretórios
-   text_scm_config: Você pode configurar seus comandos de versionamento em config/configurations.yml. Por favor reinicie a aplicação após alterá-lo.
-   text_scm_command_not_available: Comando de versionamento não disponível. Por favor verifique as configurações no painel de administração.
-+
+diff -urN redmine-1.3.0.orig/config/locales/pt-BR.yml redmine-1.3.0/config/locales/pt-BR.yml
+--- redmine-1.3.0.orig/config/locales/pt-BR.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/pt-BR.yml	2011-12-12 13:04:37.119039684 +0100
+@@ -1027,3 +1027,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/pt.yml redmine-1.2.0.maildomain/config/locales/pt.yml
---- redmine-1.2.0.orig/config/locales/pt.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/pt.yml	2011-07-08 12:40:20.394489073 +0200
-@@ -981,3 +981,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/pt.yml redmine-1.3.0/config/locales/pt.yml
+--- redmine-1.3.0.orig/config/locales/pt.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/pt.yml	2011-12-12 13:04:39.022373102 +0100
+@@ -1011,3 +1011,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/ro.yml redmine-1.2.0.maildomain/config/locales/ro.yml
---- redmine-1.2.0.orig/config/locales/ro.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/ro.yml	2011-07-08 12:40:18.512489073 +0200
-@@ -969,3 +969,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/ro.yml redmine-1.3.0/config/locales/ro.yml
+--- redmine-1.3.0.orig/config/locales/ro.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/ro.yml	2011-12-12 13:04:40.869039852 +0100
+@@ -999,3 +999,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/ru.yml redmine-1.2.0.maildomain/config/locales/ru.yml
---- redmine-1.2.0.orig/config/locales/ru.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/ru.yml	2011-07-08 12:40:16.512489072 +0200
-@@ -1089,3 +1089,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/ru.yml redmine-1.3.0/config/locales/ru.yml
+--- redmine-1.3.0.orig/config/locales/ru.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/ru.yml	2011-12-12 13:04:42.795706607 +0100
+@@ -1119,3 +1119,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/sk.yml redmine-1.2.0.maildomain/config/locales/sk.yml
---- redmine-1.2.0.orig/config/locales/sk.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/sk.yml	2011-07-08 12:40:14.434489074 +0200
-@@ -971,3 +971,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/sk.yml redmine-1.3.0/config/locales/sk.yml
+--- redmine-1.3.0.orig/config/locales/sk.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/sk.yml	2011-12-12 13:04:44.619040023 +0100
+@@ -1001,3 +1001,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/sl.yml redmine-1.2.0.maildomain/config/locales/sl.yml
---- redmine-1.2.0.orig/config/locales/sl.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/sl.yml	2011-07-08 12:40:12.215489075 +0200
-@@ -972,3 +972,5 @@
- 
-   text_git_repository_note: Shramba je prazna in lokalna (npr. /gitrepo, c:\gitrepo)
- 
-+
+diff -urN redmine-1.3.0.orig/config/locales/sl.yml redmine-1.3.0/config/locales/sl.yml
+--- redmine-1.3.0.orig/config/locales/sl.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/sl.yml	2011-12-12 13:04:47.159040138 +0100
+@@ -1006,3 +1006,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/sr.yml redmine-1.2.0.maildomain/config/locales/sr.yml
---- redmine-1.2.0.orig/config/locales/sr.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/sr.yml	2011-07-08 12:40:08.005489076 +0200
-@@ -977,3 +977,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/sr.yml redmine-1.3.0/config/locales/sr.yml
+--- redmine-1.3.0.orig/config/locales/sr.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/sr.yml	2011-12-12 13:04:51.175706985 +0100
+@@ -1007,3 +1007,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/sr-YU.yml redmine-1.2.0.maildomain/config/locales/sr-YU.yml
---- redmine-1.2.0.orig/config/locales/sr-YU.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/sr-YU.yml	2011-07-08 12:40:10.089489074 +0200
-@@ -976,3 +976,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/sr-YU.yml redmine-1.3.0/config/locales/sr-YU.yml
+--- redmine-1.3.0.orig/config/locales/sr-YU.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/sr-YU.yml	2011-12-12 13:04:49.039040222 +0100
+@@ -1006,3 +1006,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/sv.yml redmine-1.2.0.maildomain/config/locales/sv.yml
---- redmine-1.2.0.orig/config/locales/sv.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/sv.yml	2011-07-08 12:40:05.627489076 +0200
-@@ -1017,3 +1017,5 @@
-   enumeration_doc_categories: Dokumentkategorier
-   enumeration_activities: Aktiviteter (tidsuppföljning)
-   enumeration_system_activity: Systemaktivitet
-+
+diff -urN redmine-1.3.0.orig/config/locales/sv.yml redmine-1.3.0/config/locales/sv.yml
+--- redmine-1.3.0.orig/config/locales/sv.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/sv.yml	2011-12-12 13:04:53.905707108 +0100
+@@ -1047,3 +1047,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/th.yml redmine-1.2.0.maildomain/config/locales/th.yml
---- redmine-1.2.0.orig/config/locales/th.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/th.yml	2011-07-08 12:40:03.158489077 +0200
-@@ -973,3 +973,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/th.yml redmine-1.3.0/config/locales/th.yml
+--- redmine-1.3.0.orig/config/locales/th.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/th.yml	2011-12-12 13:04:56.232373879 +0100
+@@ -1003,3 +1003,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/tr.yml redmine-1.2.0.maildomain/config/locales/tr.yml
---- redmine-1.2.0.orig/config/locales/tr.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/tr.yml	2011-07-08 12:40:00.745489078 +0200
-@@ -995,3 +995,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/tr.yml redmine-1.3.0/config/locales/tr.yml
+--- redmine-1.3.0.orig/config/locales/tr.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/tr.yml	2011-12-12 13:04:58.422373978 +0100
+@@ -1025,3 +1025,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/uk.yml redmine-1.2.0.maildomain/config/locales/uk.yml
---- redmine-1.2.0.orig/config/locales/uk.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/uk.yml	2011-07-08 12:39:57.899489077 +0200
-@@ -972,3 +972,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/uk.yml redmine-1.3.0/config/locales/uk.yml
+--- redmine-1.3.0.orig/config/locales/uk.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/uk.yml	2011-12-12 13:05:00.479040738 +0100
+@@ -1002,3 +1002,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/vi.yml redmine-1.2.0.maildomain/config/locales/vi.yml
---- redmine-1.2.0.orig/config/locales/vi.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/vi.yml	2011-07-08 12:39:55.368489079 +0200
-@@ -1027,3 +1027,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/vi.yml redmine-1.3.0/config/locales/vi.yml
+--- redmine-1.3.0.orig/config/locales/vi.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/vi.yml	2011-12-12 13:05:02.449040827 +0100
+@@ -1057,3 +1057,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/zh-TW.yml redmine-1.2.0.maildomain/config/locales/zh-TW.yml
---- redmine-1.2.0.orig/config/locales/zh-TW.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/zh-TW.yml	2011-07-08 12:39:52.366489108 +0200
-@@ -1057,3 +1057,5 @@
-   enumeration_doc_categories: 文件分類
-   enumeration_activities: 活動 (時間追蹤)
-   enumeration_system_activity: 系統活動
-+
+diff -urN redmine-1.3.0.orig/config/locales/zh-TW.yml redmine-1.3.0/config/locales/zh-TW.yml
+--- redmine-1.3.0.orig/config/locales/zh-TW.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/zh-TW.yml	2011-12-12 13:05:06.342374336 +0100
+@@ -1086,3 +1086,4 @@
+   description_date_range_interval: 選擇起始與結束日期以設定範圍區間
+   description_date_from: 輸入起始日期
+   description_date_to: 輸入結束日期
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/config/locales/zh.yml redmine-1.2.0.maildomain/config/locales/zh.yml
---- redmine-1.2.0.orig/config/locales/zh.yml	2011-05-30 18:51:21.000000000 +0200
-+++ redmine-1.2.0.maildomain/config/locales/zh.yml	2011-07-08 12:39:48.095489080 +0200
-@@ -979,3 +979,5 @@
-   label_git_report_last_commit: Report last commit for files and directories
-   text_scm_config: You can configure your scm commands in config/configuration.yml. Please restart the application after editing it.
-   text_scm_command_not_available: Scm command is not available. Please check settings on the administration panel.
-+
+diff -urN redmine-1.3.0.orig/config/locales/zh.yml redmine-1.3.0/config/locales/zh.yml
+--- redmine-1.3.0.orig/config/locales/zh.yml	2011-12-10 15:53:38.000000000 +0100
++++ redmine-1.3.0/config/locales/zh.yml	2011-12-12 13:05:08.619041104 +0100
+@@ -1008,3 +1008,4 @@
+   button_export: Export
+   label_export_options: "%{export_format} export options"
+   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
 +  field_maildomain: E-mail domain
-diff -urN redmine-1.2.0.orig/db/migrate/001_setup.rb redmine-1.2.0.maildomain/db/migrate/001_setup.rb
---- redmine-1.2.0.orig/db/migrate/001_setup.rb	2011-05-30 18:51:17.000000000 +0200
-+++ redmine-1.2.0.maildomain/db/migrate/001_setup.rb	2011-07-08 12:39:01.726489091 +0200
+diff -urN redmine-1.3.0.orig/db/migrate/001_setup.rb redmine-1.3.0/db/migrate/001_setup.rb
+--- redmine-1.3.0.orig/db/migrate/001_setup.rb	2011-12-10 15:53:34.000000000 +0100
++++ redmine-1.3.0/db/migrate/001_setup.rb	2011-12-12 13:02:36.145700892 +0100
 @@ -47,6 +47,7 @@
        t.column "attr_firstname", :string, :limit => 30
        t.column "attr_lastname", :string, :limit => 30
@@ -474,4 +448,4 @@ diff -urN redmine-1.2.0.orig/db/migrate/001_setup.rb redmine-1.2.0.maildomain/db
 +      t.column "maildomain", :string, :limit => 255
        t.column "onthefly_register", :boolean, :default => false, :null => false
      end
-     
+ 

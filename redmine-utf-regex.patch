@@ -55,18 +55,18 @@ diff -ur redmine-1.2.0.orig/app/helpers/application_helper.rb redmine-1.2.0/app/
 @@ -505,7 +505,7 @@
      # when using an image link, try to use an attachment, if possible
      if options[:attachments] || (obj && obj.respond_to?(:attachments))
-       attachments = nil
--      text.gsub!(/src="([^\/"]+\.(bmp|gif|jpg|jpeg|png))"(\s+alt="([^"]*)")?/i) do |m|
-+      text.gsub!(/src="([^\/"]+\.(bmp|gif|jpg|jpeg|png))"([:space:]+alt="([^"]*)")?/i) do |m|
+       attachments = options[:attachments] || obj.attachments
+-      text.gsub!(/src="([^\/"]+\.(bmp|gif|jpg|jpe|jpeg|png))"(\s+alt="([^"]*)")?/i) do |m|
++      text.gsub!(/src="([^\/"]+\.(bmp|gif|jpg|jpe|jpeg|png))"([:space:]+alt="([^"]*)")?/i) do |m|
          filename, ext, alt, alttext = $1.downcase, $2, $3, $4
-         attachments ||= (options[:attachments] || obj.attachments).sort_by(&:created_on).reverse
          # search for the picture in attachments
+         if found = Attachment.latest_attach(attachments, filename)
 @@ -603,7 +603,7 @@
    #     identifier:version:1.0.0
    #     identifier:source:some/file
    def parse_redmine_links(text, project, obj, attr, only_path, options)
--    text.gsub!(%r{([\s\(,\-\[\>]|^)(!)?(([a-z0-9\-]+):)?(attachment|document|version|commit|source|export|message|project)?((#|r)(\d+)|(:)([^"\s<>][^\s<>]*?|"[^"]+?"))(?=(?=[[:punct:]]\W)|,|\s|\]|<|$)}) do |m|
-+    text.gsub!(%r{([[:space:]\(,\-\[\>]|^)(!)?(([a-z0-9\-]+):)?(attachment|document|version|commit|source|export|message|project)?((#|r)(\d+)|(:)([^"[:space:]<>][^[:space:]<>]*?|"[^"]+?"))(?=(?=[[:punct:]]\W)|,|[:space:]|\]|<|$)}) do |m|
+-    text.gsub!(%r{([\s\(,\-\[\>]|^)(!)?(([a-z0-9\-]+):)?(attachment|document|version|forum|news|commit|source|export|message|project)?((#|r)(\d+)|(:)([^"\s<>][^\s<>]*?|"[^"]+?"))(?=(?=[[:punct:]]\W)|,|\s|\]|<|$)}) do |m|
++    text.gsub!(%r{([[:space:]\(,\-\[\>]|^)(!)?(([a-z0-9\-]+):)?(attachment|document|version|forum|news|commit|source|export|message|project)?((#|r)(\d+)|(:)([^"[:space:]<>][^[:space:]<>]*?|"[^"]+?"))(?=(?=[[:punct:]]\W)|,|[:space:]|\]|<|$)}) do |m|
        leading, esc, project_prefix, project_identifier, prefix, sep, identifier = $1, $2, $3, $4, $5, $7 || $9, $8 || $10
        link = nil
        if project_identifier
@@ -79,18 +79,6 @@ diff -ur redmine-1.2.0.orig/app/helpers/application_helper.rb redmine-1.2.0/app/
    end
  
    # Returns the javascript tags that are included in the html layout head
-diff -ur redmine-1.2.0.orig/app/models/attachment.rb redmine-1.2.0/app/models/attachment.rb
---- redmine-1.2.0.orig/app/models/attachment.rb	2011-05-30 18:51:16.000000000 +0200
-+++ redmine-1.2.0/app/models/attachment.rb	2011-07-08 12:34:32.404489152 +0200
-@@ -169,7 +169,7 @@
-     # INCORRECT: just_filename = File.basename(value.gsub('\\\\', '/'))
- 
-     # Finally, replace all non alphanumeric, hyphens or periods with underscore
--    @filename = just_filename.gsub(/[^\w\.\-]/,'_')
-+    @filename = just_filename.gsub(/[^[:word:]\.\-]/,'_')
-   end
- 
-   # Returns an ASCII or hashed filename
 diff -ur redmine-1.2.0.orig/app/models/changeset.rb redmine-1.2.0/app/models/changeset.rb
 --- redmine-1.2.0.orig/app/models/changeset.rb	2011-05-30 18:51:16.000000000 +0200
 +++ redmine-1.2.0/app/models/changeset.rb	2011-07-08 12:32:32.970489180 +0200
@@ -160,8 +148,8 @@ diff -ur redmine-1.2.0.orig/app/models/user.rb redmine-1.2.0/app/models/user.rb
    validates_format_of :login, :with => /^[a-z0-9_\-@\.]*$/i
    validates_length_of :login, :maximum => 30
    validates_length_of :firstname, :lastname, :maximum => 30
--  validates_format_of :mail, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
-+  validates_format_of :mail, :with => /^([^@[:space:]]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_nil => true
+-  validates_format_of :mail, :with => /^([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_blank => true
++  validates_format_of :mail, :with => /^([^@[:space:]]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})$/i, :allow_blank => true
    validates_length_of :mail, :maximum => 60, :allow_nil => true
    validates_confirmation_of :password, :allow_nil => true
    validates_inclusion_of :mail_notification, :in => MAIL_NOTIFICATION_OPTIONS.collect(&:first), :allow_blank => true

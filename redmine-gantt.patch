@@ -3,7 +3,7 @@
 @@ -62,7 +62,7 @@
  end
 
- # Width of the entire chart    
+ # Width of the entire chart
 -g_width = (@gantt.date_to - @gantt.date_from + 1)*zoom
 +g_width = (@gantt.date_to.jd - @gantt.date_from.jd + 1)*zoom
  
@@ -12,9 +12,9 @@
 @@ -106,7 +106,7 @@
  left = 0
  height = (show_weeks ? header_heigth : header_heigth + g_height)
- @gantt.months.times do 
--	width = ((month_f >> 1) - month_f) * zoom - 1
-+	width = ((month_f >> 1).jd - month_f.jd) * zoom - 1
- 	%>
- 	<div style="left:<%= left %>px;width:<%= width %>px;height:<%= height %>px;" class="gantt_hdr">
- 	<%= link_to "#{month_f.year}-#{month_f.month}", @gantt.params.merge(:year => month_f.year, :month => month_f.month), :title => "#{month_name(month_f.month)} #{month_f.year}"%>
+ @gantt.months.times do
+-  width = ((month_f >> 1) - month_f) * zoom - 1
++  width = ((month_f >> 1).jd - month_f.jd) * zoom - 1
+   %>
+   <div style="left:<%= left %>px;width:<%= width %>px;height:<%= height %>px;" class="gantt_hdr">
+   <%= link_to "#{month_f.year}-#{month_f.month}", @gantt.params.merge(:year => month_f.year, :month => month_f.month), :title => "#{month_name(month_f.month)} #{month_f.year}"%>

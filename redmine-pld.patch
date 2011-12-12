@@ -23,10 +23,10 @@ diff -ur redmine-0.9.3/config/environment.rb redmine-0.9.3-fixes/config/environm
    config.action_mailer.perform_deliveries = false
  
 -  config.gem 'rubytree', :lib => 'tree'
--  config.gem 'coderay', :version => '~>0.9.7'
+-  config.gem 'coderay', :version => '~>1.0.0'
 +  require 'tree' # rubytree
-+  require 'coderay' # coderay ~>0.9.7
-   
++  require 'coderay' # coderay ~>1.0.0
+ 
    # Load any local configuration that is kept out of source control
    # (e.g. gems, patches).
 diff -ur redmine/config/environments/production.rb redmine-0.9.3//config/environments/production.rb

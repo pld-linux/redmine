@@ -10,10 +10,10 @@
  
                Revision.new({
 @@ -130,6 +130,7 @@
-             revno = 1
+             parsing_descr = 0  #0: not parsing desc or files, 1: parsing desc, 2: parsing files
  
              io.each_line do |line|
 +              line.force_encoding(Encoding::ASCII_8BIT) if line.respond_to?(:force_encoding)
-               if line =~ /^commit ([0-9a-f]{40})$/
+               if line =~ /^commit ([0-9a-f]{40})(( [0-9a-f]{40})*)$/
                  key = "commit"
                  value = $1

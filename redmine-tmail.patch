@@ -2,22 +2,19 @@
 +++ redmine-1.2.0/config/initializers/10-patches.rb	2011-07-08 14:22:00.549775176 +0200
 @@ -81,13 +81,13 @@
  
- # TMail::Unquoter.convert_to_with_fallback_on_iso_8859_1 introduced in TMail 1.2.7
- # triggers a test failure in test_add_issue_with_japanese_keywords(MailHandlerTest)
--module TMail
+ module TMail
+   # TMail::Unquoter.convert_to_with_fallback_on_iso_8859_1 introduced in TMail 1.2.7
+   # triggers a test failure in test_add_issue_with_japanese_keywords(MailHandlerTest)
 -  class Unquoter
 -    class << self
 -      alias_method :convert_to, :convert_to_without_fallback_on_iso_8859_1
 -    end
 -  end
--end
-+#module TMail
 +#  class Unquoter
 +#    class << self
 +#      alias_method :convert_to, :convert_to_without_fallback_on_iso_8859_1
 +#    end
 +#  end
-+#end
  
- module ActionController
-   module MimeResponds
+   # Patch for TMail 1.2.7. See http://www.redmine.org/issues/8751
+   class Encoder
