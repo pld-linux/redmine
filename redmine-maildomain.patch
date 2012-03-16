@@ -162,9 +162,9 @@ diff -urN redmine-1.3.0.orig/config/locales/es.yml redmine-1.3.0/config/locales/
 --- redmine-1.3.0.orig/config/locales/es.yml	2011-12-10 15:53:38.000000000 +0100
 +++ redmine-1.3.0/config/locales/es.yml	2011-12-12 13:03:46.585704071 +0100
 @@ -1043,3 +1043,4 @@
-   button_export: Export
-   label_export_options: "%{export_format} export options"
-   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
+   button_export: Exportar
+   label_export_options: "%{export_format} opciones de exportación"
+   error_attachment_too_big: Este fichero no se puede adjuntar porque excede el tamaño máximo de fichero (%{max_size})
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.3.0.orig/config/locales/eu.yml redmine-1.3.0/config/locales/eu.yml
 --- redmine-1.3.0.orig/config/locales/eu.yml	2011-12-10 15:53:38.000000000 +0100
@@ -242,9 +242,9 @@ diff -urN redmine-1.3.0.orig/config/locales/it.yml redmine-1.3.0/config/locales/
 --- redmine-1.3.0.orig/config/locales/it.yml	2011-12-10 15:53:38.000000000 +0100
 +++ redmine-1.3.0/config/locales/it.yml	2011-12-12 13:04:14.775705343 +0100
 @@ -1007,3 +1007,4 @@
-   button_export: Export
-   label_export_options: "%{export_format} export options"
-   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
+   button_export: Esporta
+   label_export_options: "%{export_format} opzioni per l'export"
+   error_attachment_too_big: Questo file non può essere caricato in quanto la sua dimensione supera la massima consentita (%{max_size})
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.3.0.orig/config/locales/ja.yml redmine-1.3.0/config/locales/ja.yml
 --- redmine-1.3.0.orig/config/locales/ja.yml	2011-12-10 15:53:38.000000000 +0100
@@ -258,9 +258,9 @@ diff -urN redmine-1.3.0.orig/config/locales/ko.yml redmine-1.3.0/config/locales/
 --- redmine-1.3.0.orig/config/locales/ko.yml	2011-12-10 15:53:38.000000000 +0100
 +++ redmine-1.3.0/config/locales/ko.yml	2011-12-12 13:04:19.082372203 +0100
 @@ -1058,3 +1058,4 @@
-   button_export: Export
-   label_export_options: "%{export_format} export options"
-   error_attachment_too_big: This file cannot be uploaded because it exceeds the maximum allowed file size (%{max_size})
+   button_export: "내보내기"
+   label_export_options: "내보내기 옵션: %{export_format}"
+   error_attachment_too_big: "이 파일은 제한된 크기(%{max_size})를 초과하였기 때문에 업로드 할 수 없습니다."
 +  field_maildomain: E-mail domain
 diff -urN redmine-1.3.0.orig/config/locales/lt.yml redmine-1.3.0/config/locales/lt.yml
 --- redmine-1.3.0.orig/config/locales/lt.yml	2011-12-10 15:53:38.000000000 +0100
@@ -449,3 +449,4 @@ diff -urN redmine-1.3.0.orig/db/migrate/001_setup.rb redmine-1.3.0/db/migrate/00
        t.column "onthefly_register", :boolean, :default => false, :null => false
      end
  
+

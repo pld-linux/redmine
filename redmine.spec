@@ -5,12 +5,12 @@
 %include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
-Version:	1.3.0
+Version:	1.3.2
 Release:	1
 License:	GPL v2
 Group:		Applications/WWW
-Source0:	http://rubyforge.org/frs/download.php/75597/%{name}-%{version}.tar.gz
-# Source0-md5:	4aa3534ae6a06bc3732b1c8b6eee7c60
+Source0:	http://rubyforge.org/frs/download.php/75910/%{name}-%{version}.tar.gz
+# Source0-md5:	49b5dc8a4d06b4db855fdda2e30c2a69
 Source2:	%{name}.conf
 # Shove UTF-8 down rails throat, needed for rails < 3
 Source3:	%{name}-fix_params.rb
@@ -24,7 +24,6 @@ Patch4:		%{name}-maildomain.patch
 Patch5:		%{name}-gantt.patch
 Patch6:		%{name}-git-parse.patch
 Patch7:		%{name}-tmail.patch
-Patch8:		%{name}-utf8.patch
 URL:		http://www.redmine.org/
 BuildRequires:	dos2unix
 BuildRequires:	perl-base
@@ -125,7 +124,6 @@ find \( -name '*.rb' -o -name '*.rake' \) -print0 | xargs -0 dos2unix -k -q
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
-%patch8 -p1
 
 # ruby 1.9.3 became very strict about escaping
 %{__sed} -i  -e 's/\([^\]\+\):\\\([^\]\+\)/\1:\\\\\2/g' \
