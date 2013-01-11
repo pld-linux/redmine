@@ -37,7 +37,7 @@ Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay >= 1.0.0
 Requires:	ruby-i18n >= 0.4.2
-Requires:	ruby-rails2 = 2.3.14
+Requires:	ruby-rails2 = 2.3.15
 Requires:	ruby-rake
 Requires:	ruby-rubytree >= 0.5.2
 Requires:	webapps
