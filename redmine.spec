@@ -6,7 +6,7 @@
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	1.3.2
-Release:	1
+Release:	2
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/75910/%{name}-%{version}.tar.gz
@@ -37,7 +37,7 @@ Requires:	ruby-RMagick
 Requires:	ruby-SyslogLogger
 Requires:	ruby-coderay >= 1.0.0
 Requires:	ruby-i18n >= 0.4.2
-Requires:	ruby-rails2 = 2.3.15
+Requires:	ruby-rails2 = 2.3.16
 Requires:	ruby-rake
 Requires:	ruby-rubytree >= 0.5.2
 Requires:	webapps
