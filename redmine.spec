@@ -6,7 +6,7 @@
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	1.3.2
-Release:	4
+Release:	5
 License:	GPL v2
 Group:		Applications/WWW
 Source0:	http://rubyforge.org/frs/download.php/75910/%{name}-%{version}.tar.gz
@@ -51,6 +51,7 @@ Suggests:	ruby-mysql-library
 Suggests:	ruby-openid >= 2.1.4
 Suggests:	subversion >= 1.3
 Provides:	user(redmine)
+Conflicts:	apache-base < 2.4.0-1
 # Does not work AT ALL with rails 3 currently
 Conflicts:	ruby-rails >= 3.0
 BuildArch:	noarch
@@ -205,11 +206,11 @@ if [ "$1" = "0" ]; then
 	%userremove redmine
 fi
 
-%triggerin -- apache < 2.2.0, apache-base
+%triggerin -- apache-base
 %webapp_register httpd %{_webapp}
 %addusertogroup -q redmine http
 
-%triggerun -- apache < 2.2.0, apache-base
+%triggerun -- apache-base
 %webapp_unregister httpd %{_webapp}
 
 %files
