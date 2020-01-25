@@ -2,7 +2,6 @@
 #	- other operation modes: rails/webrick, mongrel?\
 #
 # for reposman
-%include	/usr/lib/rpm/macros.perl
 Summary:	Flexible project management web application
 Name:		redmine
 Version:	1.3.2
